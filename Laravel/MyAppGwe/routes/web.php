@@ -5,17 +5,15 @@ use App\Http\Controllers\Hi;
 use App\Http\Controllers\MahasiswaController;
 use App\Http\Controllers\TesController;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get("/", function () {
+    return view("welcome");
 });
 
-Route::get('/ok', function(){
+Route::get("/ok", function () {
     return view("hallo");
 });
 
-Route::get('/hai', [Hi::class, 'sapa']);
-Route::get('/tes', [TesController::class, 'index']);
+Route::get("/hai", [Hi::class, "sapa"]);
+Route::get("/tes", [TesController::class, "index"]);
 
-Route::get('/mahasiswa', [MahasiswaController::class, 'index']);
-Route::get('/mahasiswa/{id}', [MahasiswaController::class, 'show']);
-Route::post('/mahasiswa', [MahasiswaController::class, 'store']);
+Route::get("/mahasiswa", [MahasiswaController::class, "index"]);
