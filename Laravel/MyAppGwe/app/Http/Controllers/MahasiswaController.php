@@ -8,16 +8,11 @@ class MahasiswaController extends Controller
 {
     public function index()
     {
-        return "Daftar Seluruh Mahasiswa";
-    }
+        $mahasiswa = [
+            ["nama" => "andi", "ipk" => 3.5],
+            ["nama" => "subahehe", "ipk" => 3.0],
+        ];
 
-    public function show(string $id)
-    {
-        return "Detail Mahasiswa dengan id:$id";
-    }
-
-    public function store()
-    {
-        return "Menyimpan Data Mahasiswa Baru";
+        return view("mahasiswa.index", ["mahasiswa" => $mahasiswa]);
     }
 }
