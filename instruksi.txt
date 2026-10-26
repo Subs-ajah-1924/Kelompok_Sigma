@@ -1,0 +1,2109 @@
+================================================================================
+INSTRUKSI PROYEK: WEB TASK & NOTE MANAGER
+Folder kerja : ~/Documents/Kelompok_Sigma/project_task_manager
+Tim          : Kelompok Sigma
+Versi        : 1.0
+Tanggal      : 26 Oktober 2026
+================================================================================
+
+Dokumen ini adalah panduan kerja lengkap: tech stack, struktur data, aturan
+keamanan, urutan pengerjaan, target UI, pengujian, sampai checklist deploy.
+Baca dari atas ke bawah sebelum mulai coding. Spesifikasi asli dari dosen/
+pemberi tugas ada di Lampiran A agar tidak ada kebutuhan yang terlewat.
+
+
+================================================================================
+0. PRINSIP KERJA
+================================================================================
+
+1. Selesaikan fitur inti dulu, baru poles tampilan. Jangan mengejar fitur
+   tambahan sebelum CRUD, autentikasi, isolasi data, dan kanban stabil.
+2. Semua data tugas, mata kuliah, dan agenda selalu terikat ke user yang
+   sedang login. Tidak ada role admin.
+3. Satu sumber kebenaran (single source of truth):
+   - Status tugas hanya disimpan di kolom tasks.status.
+   - Deadline tugas hanya disimpan di tasks.deadline.
+   - Agenda manual hanya disimpan di tabel agendas.
+   - Kalender TIDAK menyimpan salinan deadline tugas.
+4. Semua input divalidasi di server. Validasi HTML di browser hanya bonus.
+5. Semua perubahan data lewat controller + Form Request + Policy. Jangan
+   mengandalkan JavaScript untuk keamanan.
+6. UI harus ringan: server-rendered Blade, Tailwind, Alpine.js seperlunya,
+   tanpa SPA framework, tanpa library kalender/chart yang berat.
+7. Setiap fase harus punya bukti selesai: bisa didemokan, lolos test, dan
+   tidak merusak fitur sebelumnya.
+8. Gunakan bahasa Indonesia untuk teks UI, nama fitur, label status, dan
+   alasan rekomendasi agar mudah dipresentasikan.
+
+
+================================================================================
+1. RINGKASAN PROYEK
+================================================================================
+
+Aplikasi web untuk mahasiswa mengelola:
+- Akun pengguna (registrasi, login, logout).
+- Mata kuliah milik masing-masing pengguna.
+- Tugas dengan judul, deskripsi, mata kuliah, deadline, tingkat kesulitan,
+  dan status pengerjaan.
+- Kanban Board (To Do, In Progress, Done) yang tersinkron dengan status tugas.
+- Rekomendasi prioritas deterministik berbasis aturan (tanpa AI/ML).
+- Pencarian dan filter tugas yang bisa dikombinasikan.
+- Notifikasi deadline (terlambat, hari ini, segera, dan 7 hari ke depan).
+- Kalender bulanan dengan agenda manual dan deadline tugas otomatis.
+
+Yang TIDAK perlu dibuat pada versi ini (hindari scope creep):
+- Role admin, manajemen user, atau halaman khusus admin.
+- AI/ML, chatbot, embedding, atau rekomendasi berbasis model.
+- Realtime WebSocket/Pusher, chat, komentar, lampiran file, rich text editor.
+- Integrasi email/WhatsApp/push notification. Notifikasi cukup halaman/panel
+  di dalam aplikasi.
+- Aplikasi mobile native. Cukup web responsif.
+- Pembayaran, subscription, atau fitur sosial.
+
+
+================================================================================
+2. REKOMENDASI TECH STACK
+================================================================================
+
+2.1. STACK UTAMA (PALING DISARANKAN)
+
+| Lapisan            | Pilihan                                      | Alasan |
+|--------------------|----------------------------------------------|--------|
+| Bahasa             | PHP 8.4                                      | Sudah tersedia di mesin ini, didukung Laravel 13 |
+| Framework          | Laravel 13.x                                 | Sesuai ketentuan tugas, ekosistem lengkap, aman |
+| Database           | MariaDB 11.4 / MySQL 8                       | Relasional, tersedia di mesin ini, mudah dipakai tim |
+| Database lokal     | SQLite (opsional untuk eksperimen cepat)     | Tanpa server, cocok untuk latihan; test pakai SQLite in-memory |
+| Autentikasi        | Laravel Breeze 2.4 (stack Blade)             | Ringan, sudah menyediakan register/login/logout, Tailwind, Alpine |
+| Templating         | Blade                                        | Server-rendered, bundle kecil, mudah dipelajari |
+| CSS                | Tailwind CSS 4 + Vite                        | Utility-first, hasil build kecil, konsisten |
+| JavaScript         | Alpine.js 3 + JavaScript native (fetch)      | Cukup untuk modal, dropdown, filter, dan request AJAX |
+| Drag & drop Kanban | SortableJS                                  | Kecil, tanpa dependency, bisa dimuat hanya di halaman Kanban |
+| Ikon               | Heroicons/Lucide sebagai SVG inline          | Tidak perlu icon font/CDN, ikut ter-tree-shake |
+| Tanggal            | Carbon (server) + input date native (client) | Tidak perlu moment.js/datepicker berat |
+| Testing            | PHPUnit 12 (bawaan Laravel 13)               | Sudah terpasang, cukup untuk unit + feature test |
+| Code style         | Laravel Pint                                 | Format otomatis, konsisten |
+| Version control    | Git + GitHub/GitLab                          | Kolaborasi dan review |
+| Build tool         | Vite 8 + Node 24 + npm 11                    | Sudah tersedia, cepat, output produksi kecil |
+
+Catatan versi:
+- Mesin ini sudah memiliki PHP 8.4.27, Composer 2.10.3, Node 24.21.0,
+  npm 11.19.0, dan server MariaDB 11.4 yang berjalan.
+- Gunakan versi stabil terbaru yang kompatibel. Jangan mencampur Tailwind 3
+  dan Tailwind 4 dalam satu proyek.
+- Breeze 2.4.2 mendukung Laravel 11/12/13 dan PHP 8.2+.
+
+2.2. ALTERNATIF YANG MASIH WAJAR
+
+a. Livewire 3 + Blade + Tailwind
+   - Produktivitas tinggi untuk filter, modal, dan update status tanpa banyak
+     JavaScript.
+   - Sedikit lebih berat dan lebih "magic" daripada Blade + Alpine.
+   - Pilih ini hanya jika tim sudah nyaman dengan Livewire.
+
+b. Laravel + Inertia + Vue 3/React
+   - Tidak disarankan untuk tugas ini karena menambah kompleksitas build,
+     state management, dan bundle. Gunakan hanya jika tim sangat menguasai
+     Vue/React dan tetap ingin SPA.
+
+c. Laravel + Bootstrap 5
+   - Boleh, tetapi jangan digabung dengan Tailwind. Bootstrap + jQuery +
+     template admin (AdminLTE) membuat halaman lebih berat dan sulit
+     dikustomisasi. Tailwind lebih disarankan.
+
+2.3. YANG SEBAIKNYA DIHINDARI
+
+- AdminLTE, SB Admin, tema marketplace yang penuh plugin.
+- jQuery + Bootstrap + Tailwind sekaligus.
+- FullCalendar untuk kalender bulanan sederhana (cukup grid Carbon + CSS).
+- Chart.js/ApexCharts jika tidak ada kebutuhan grafik.
+- Moment.js, lodash, icon font, Google Fonts dengan banyak weight.
+- Rich text editor (TinyMCE/CKEditor) untuk deskripsi tugas. Cukup textarea.
+- CDN untuk aset produksi. Bundle lewat Vite agar tidak bergantung internet.
+- Menyimpan status di dua tempat (mis. kolom status + tabel kanban terpisah).
+- Menyimpan deadline tugas sebagai agenda duplikat.
+
+2.4. MENGAPA STACK INI RINGAN
+
+- Halaman dirender di server; browser tidak perlu mengunduh SPA framework.
+- Tailwind hanya mengirim class yang dipakai.
+- Alpine.js hanya dipakai untuk interaksi kecil (modal, dropdown, konfirmasi).
+- SortableJS dimuat kondisional hanya di halaman Kanban.
+- Kalender dibuat sendiri dengan grid CSS + Carbon, tanpa library besar.
+- Tidak ada WebSocket, Redis, queue, atau worker. Cukup PHP + database.
+- Ikon SVG inline, font sistem, dan pagination server-side.
+
+Target performa kasar:
+- JavaScript awal < 100 KB (gzip) di luar halaman Kanban.
+- CSS produksi < 50 KB (gzip).
+- Tidak ada N+1 query; gunakan eager loading relasi course.
+- Halaman daftar tugas maksimal 12 item per halaman.
+
+
+================================================================================
+3. PERSIAPAN DAN SETUP PROYEK
+================================================================================
+
+PENTING: folder project_task_manager sudah berisi file instruksi.txt ini.
+Composer create-project menolak folder yang tidak kosong. Karena itu buat
+proyek Laravel di folder sementara, lalu salin isinya ke folder ini.
+
+3.1. BUAT PROYEK LARAVEL
+
+Jalankan dari terminal:
+
+    cd ~/Documents/Kelompok_Sigma
+
+    composer create-project laravel/laravel project_task_manager_tmp
+
+    rsync -a project_task_manager_tmp/ project_task_manager/
+    rm -rf project_task_manager_tmp
+
+    cd project_task_manager
+
+Alternatif tanpa rsync:
+
+    mv project_task_manager/instruksi.txt ./instruksi.txt
+    rmdir project_task_manager
+    composer create-project laravel/laravel project_task_manager
+    mv instruksi.txt project_task_manager/instruksi.txt
+    cd project_task_manager
+
+3.2. CEK STRUKTUR DAN KONFIGURASI
+
+    php artisan --version
+    cp .env.example .env
+    php artisan key:generate
+
+Edit .env:
+
+    APP_NAME="Sigma Task Manager"
+    APP_ENV=local
+    APP_DEBUG=true
+    APP_URL=http://localhost:8000
+    APP_TIMEZONE=Asia/Jakarta
+
+    DB_CONNECTION=mysql
+    DB_HOST=127.0.0.1
+    DB_PORT=3306
+    DB_DATABASE=sigma_task_manager
+    DB_USERNAME=root
+    DB_PASSWORD=
+
+Buat database (MariaDB/MySQL):
+
+    mysql -u root -p -e "CREATE DATABASE sigma_task_manager CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+Jika login root tanpa password:
+
+    mysql -u root -e "CREATE DATABASE sigma_task_manager CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+Catatan SQLite (opsional, untuk latihan cepat):
+- Set DB_CONNECTION=sqlite dan DB_DATABASE=/absolute/path/database/database.sqlite.
+- Buat file: touch database/database.sqlite.
+- Migrasi harus tetap portabel; jangan pakai fitur khusus MySQL di kode.
+- Untuk tugas akhir/demo, gunakan MariaDB/MySQL agar sesuai ekspektasi umum.
+
+3.3. INSTALL AUTENTIKASI DAN PAKET FRONTEND
+
+    composer require laravel/breeze --dev
+    php artisan breeze:install blade
+    npm install
+    npm install sortablejs
+
+Jawab prompt Breeze:
+- Dark mode: pilih sesuai selera (disarankan No agar scope tetap kecil).
+- Testing framework: pilih PHPUnit (sama dengan default proyek).
+- Jika Breeze menanyakan build, pilih melakukan npm install/build.
+
+Setelah itu:
+
+    php artisan migrate
+    npm run dev
+
+Di terminal lain:
+
+    php artisan serve
+
+Buka http://localhost:8000 dan pastikan halaman login/register tampil.
+
+3.4. STRUKTUR AWAL YANG HARUS ADA SEBELUM FITUR
+
+    app/
+      Enums/
+        TaskStatus.php
+        Difficulty.php
+      Http/
+        Controllers/
+          DashboardController.php
+          TaskController.php
+          CourseController.php
+          KanbanController.php
+          CalendarController.php
+          AgendaController.php
+          NotificationController.php
+        Requests/
+          StoreTaskRequest.php
+          UpdateTaskRequest.php
+          UpdateTaskStatusRequest.php
+          StoreCourseRequest.php
+          UpdateCourseRequest.php
+          StoreAgendaRequest.php
+          UpdateAgendaRequest.php
+      Models/
+        User.php
+        Course.php
+        Task.php
+        Agenda.php
+      Policies/
+        TaskPolicy.php
+        CoursePolicy.php
+        AgendaPolicy.php
+      Services/
+        TaskRecommendationService.php
+    database/
+      factories/
+      migrations/
+      seeders/
+    resources/
+      views/
+        layouts/
+        components/
+        dashboard/
+        tasks/
+        kanban/
+        calendar/
+        agendas/
+        notifications/
+        courses/
+        auth/          (dari Breeze)
+    routes/
+      web.php
+      auth.php         (dari Breeze)
+    tests/
+      Unit/
+      Feature/
+
+3.5. URUTAN COMMAND YANG DISARANKAN UNTUK GENERATOR
+
+    php artisan make:enum TaskStatus
+    php artisan make:enum Difficulty
+
+    php artisan make:model Course -mf
+    php artisan make:model Task -mf
+    php artisan make:model Agenda -mf
+
+    php artisan make:policy TaskPolicy --model=Task
+    php artisan make:policy CoursePolicy --model=Course
+    php artisan make:policy AgendaPolicy --model=Agenda
+
+    php artisan make:request StoreTaskRequest
+    php artisan make:request UpdateTaskRequest
+    php artisan make:request UpdateTaskStatusRequest
+    php artisan make:request StoreCourseRequest
+    php artisan make:request UpdateCourseRequest
+    php artisan make:request StoreAgendaRequest
+    php artisan make:request UpdateAgendaRequest
+
+    php artisan make:controller DashboardController
+    php artisan make:controller TaskController --resource
+    php artisan make:controller CourseController --resource
+    php artisan make:controller KanbanController
+    php artisan make:controller CalendarController
+    php artisan make:controller AgendaController --resource
+
+    php artisan make:controller NotificationController
+
+    php artisan make:service TaskRecommendationService
+
+Catatan: jika `make:service` tidak tersedia, buat folder/file manual:
+app/Services/TaskRecommendationService.php.
+
+3.6. COMMAND HARIAN
+
+    php artisan serve
+    npm run dev
+    php artisan migrate
+    php artisan migrate:fresh --seed
+    php artisan test
+    ./vendor/bin/pint
+    npm run build
+
+Jalankan `php artisan serve` dan `npm run dev` di dua terminal terpisah.
+
+
+================================================================================
+4. ARSITEKTUR DAN STRUKTUR KODE
+================================================================================
+
+4.1. GAYA ARSITEKTUR
+
+Gunakan arsitektur MVC Laravel yang sederhana, ditambah:
+- Form Request  : validasi + otorisasi input.
+- Policy        : aturan kepemilikan data.
+- Service       : logika rekomendasi deterministik.
+- Enum          : nilai status dan tingkat kesulitan.
+- Query scope   : filter dan pencarian agar controller tetap ramping.
+- Blade component: UI konsisten dan tidak duplikasi markup.
+
+Jangan membuat repository pattern, domain layer, CQRS, event sourcing, atau
+abstraksi berlebihan untuk proyek sekecil ini. Cukup rapi dan mudah diuji.
+
+4.2. TANGGUNG JAWAB FILE
+
+| File/Komponen                  | Tanggung jawab |
+|--------------------------------|----------------|
+| routes/web.php                 | Daftar route + middleware auth |
+| Controller                     | Ambil data, panggil service, kembalikan view/JSON |
+| Form Request                   | Validasi input dan aturan kepemilikan course |
+| Policy                         | Cek user boleh melihat/mengubah data |
+| Model                          | Relasi, cast, scope pencarian/filter |
+| TaskRecommendationService      | Hitung skor, label prioritas, dan alasan |
+| Blade layout                   | Navigasi, flash message, slot konten |
+| Blade component                | Badge, card, modal, empty state, tombol |
+| Seeder                         | Data demo 2 user untuk uji isolasi data |
+
+4.3. ATURAN PENULISAN KODE
+
+- Nama class, method, variabel: bahasa Inggris (konvensi Laravel).
+- Teks UI dan alasan rekomendasi: bahasa Indonesia.
+- Gunakan type hint dan return type.
+- Gunakan enum cast, bukan string bebas.
+- Gunakan `auth()->user()->tasks()` untuk query data user, bukan `Task::all()`.
+- Gunakan eager loading: `with('course')` pada daftar tugas.
+- Gunakan `paginate(12)->withQueryString()` untuk mempertahankan filter.
+- Jangan menaruh query kompleks di Blade.
+- Jangan menaruh logika rekomendasi di controller; panggil service.
+- Setiap controller method yang mengubah data memakai Form Request + Policy.
+- Hindari `DB::raw` kecuali benar-benar perlu.
+- Jalankan Pint sebelum commit.
+
+
+================================================================================
+5. STRUKTUR DATABASE
+================================================================================
+
+5.1. ERD SEDERHANA
+
+    users (1) -----< courses
+      |                 |
+      |                 | (opsional, satu course punya banyak task)
+      |                 v
+      |--------------< tasks >---- courses
+      |
+      |--------------< agendas
+
+Keterangan:
+- users 1:N courses, tasks, agendas.
+- courses 1:N tasks. tasks.course_id boleh NULL jika mata kuliah dihapus.
+- agendas TIDAK berelasi ke tasks. Deadline tugas tidak pernah disalin ke
+  agendas; kalender menggabungkan dua sumber data saat ditampilkan.
+
+5.2. TABEL users (bawaan Laravel/Breeze)
+
+Kolom wajib: id, name, email (unique), password, timestamps.
+Tidak perlu kolom role. Semua user setara.
+
+5.3. TABEL courses
+
+    id
+    user_id        foreignId -> users.id, cascadeOnDelete
+    name           string(100)
+    code           string(20), nullable
+    color          string(7), nullable  // contoh: #4F46E5
+    timestamps
+
+    unique(['user_id', 'name'])
+    index(['user_id'])
+
+Aturan:
+- Nama mata kuliah unik per user, boleh sama antar user berbeda.
+- color opsional untuk chip UI; validasi format hex.
+- Menghapus course tidak menghapus task; set tasks.course_id menjadi NULL.
+
+5.4. TABEL tasks
+
+    id
+    user_id        foreignId -> users.id, cascadeOnDelete
+    course_id      foreignId -> courses.id, nullable, nullOnDelete
+    title          string(150)
+    description    text, nullable
+    deadline       dateTime
+    difficulty     string(10)   // mudah | sedang | sulit
+    status         string(15)   // todo | in_progress | done
+    timestamps
+
+    index(['user_id', 'deadline'])
+    index(['user_id', 'status'])
+    index(['user_id', 'difficulty'])
+
+Aturan:
+- deadline wajib diisi.
+- status default 'todo'.
+- Deadline boleh berada di masa lalu (tugas terlambat/import data). UI harus
+  menandainya sebagai terlambat, bukan menolak data.
+- completed_at tidak wajib. Tambahkan hanya jika butuh statistik "selesai
+  minggu ini"; jika tidak, cukup status.
+- Jangan menyimpan prioritas di database. Prioritas dihitung saat dibutuhkan
+  oleh TaskRecommendationService agar selalu mengikuti deadline terbaru.
+
+5.5. TABEL agendas
+
+    id
+    user_id        foreignId -> users.id, cascadeOnDelete
+    date           date
+    start_time     time, nullable
+    title          string(150)
+    description    text, nullable
+    timestamps
+
+    index(['user_id', 'date'])
+
+Aturan:
+- Ini agenda manual: catatan, rencana kegiatan, atau rencana pengerjaan.
+- Tidak ada task_id di tabel ini.
+- Jika user ingin mengerjakan tugas pada tanggal tertentu, ia menulis agenda
+  manual; deadline tugas tetap tampil terpisah dari tasks.deadline.
+- Jangan pernah membuat agenda otomatis dari deadline tugas.
+
+5.6. ENUM
+
+TaskStatus (string backed enum):
+- todo         => label "To Do"
+- in_progress  => label "In Progress"
+- done         => label "Done"
+
+Difficulty (string backed enum):
+- mudah  => bobot 1
+- sedang => bobot 2
+- sulit  => bobot 3
+
+Gunakan cast di model Task:
+    protected function casts(): array
+    {
+        return [
+            'deadline' => 'datetime',
+            'status' => TaskStatus::class,
+            'difficulty' => Difficulty::class,
+        ];
+    }
+
+5.7. RELASI MODEL
+
+User:
+- courses(): hasMany(Course)
+- tasks(): hasMany(Task)
+- agendas(): hasMany(Agenda)
+
+Course:
+- user(): belongsTo(User)
+- tasks(): hasMany(Task)
+
+Task:
+- user(): belongsTo(User)
+- course(): belongsTo(Course)->withDefault() atau nullable handling
+
+Agenda:
+- user(): belongsTo(User)
+
+5.8. FACTORY DAN SEEDER
+
+Factory state yang wajib ada:
+- TaskFactory: todo, inProgress, done, overdue, dueSoon, hard, easy.
+- CourseFactory: dengan color.
+- AgendaFactory: tanggal hari ini/beberapa hari ke depan.
+
+DemoSeeder harus membuat:
+- 2 user: demo1@example.com dan demo2@example.com (password diketahui,
+  mis. "password").
+- 3 mata kuliah untuk user 1, 2 mata kuliah untuk user 2.
+- Minimal 10 tugas user 1 dengan variasi status, kesulitan, dan deadline:
+  beberapa terlambat, hari ini, 1-3 hari, 4-7 hari, >7 hari.
+- Minimal 3 tugas user 2 untuk membuktikan isolasi data.
+- 3-5 agenda manual untuk user 1.
+- Tanggal seeder memakai now()->subDays()/addDays(), bukan tanggal mati,
+  supaya demo selalu relevan.
+
+Jalankan:
+    php artisan migrate:fresh --seed
+
+5.9. MIGRASI
+
+- Satu migration per tabel; jangan menumpuk semua di satu file.
+- Foreign key wajib.
+- Gunakan cascadeOnDelete untuk user_id.
+- Gunakan nullOnDelete untuk course_id.
+- Tambahkan index sesuai daftar di atas.
+- Jangan mengubah migration lama setelah di-commit; buat migration baru.
+- Jalankan `php artisan migrate:fresh --seed` hanya di lokal, bukan produksi.
+
+
+================================================================================
+6. AUTENTIKASI, OTORISASI, DAN KEAMANAN
+================================================================================
+
+6.1. AUTENTIKASI
+
+- Gunakan Breeze: register, login, logout, reset password, verifikasi email
+  (opsional), dan halaman profile.
+- Semua route aplikasi memakai middleware 'auth', kecuali halaman auth.
+- Setelah register/login, arahkan ke /dashboard.
+- Setelah logout, arahkan ke halaman login.
+- Jangan membuat role admin.
+- Jangan menampilkan daftar user lain.
+
+6.2. ISOLASI DATA (WAJIB)
+
+Aturan mutlak:
+- Semua query data memakai relasi user yang login.
+  Contoh: $request->user()->tasks()->with('course')->latest()->paginate(12)
+- Jangan pernah menerima user_id dari form untuk task/course/agenda.
+  user_id diisi dari auth()->id() atau lewat relasi.
+- Saat mengambil detail: gunakan route model binding, lalu Policy.
+- Saat membuat/mengubah tugas: validasi course_id harus milik user yang login.
+
+Contoh aturan validasi course_id di StoreTaskRequest/UpdateTaskRequest:
+
+    Rule::exists('courses', 'id')->where(
+        fn ($query) => $query->where('user_id', $this->user()->id)
+    )
+
+Tanpa aturan ini, user bisa menempelkan tugas ke mata kuliah milik user lain.
+
+6.3. POLICY
+
+TaskPolicy:
+- viewAny: true (query tetap dibatasi ke user sendiri)
+- view: $task->user_id === $user->id
+- create: true
+- update: $task->user_id === $user->id
+- delete: $task->user_id === $user->id
+
+CoursePolicy dan AgendaPolicy: pola yang sama.
+
+Di controller:
+    $this->authorize('update', $task);
+
+Panggil di method show, edit, update, destroy, dan updateStatus.
+Policy mengembalikan 403. Jika ingin menyembunyikan keberadaan data, gunakan
+query ter-scope user + findOrFail sehingga hasilnya 404. Pilih satu pola dan
+konsisten; untuk proyek ini 403 dari Policy sudah dapat diterima asal diuji.
+
+6.4. VALIDASI DAN SANITASI
+
+- Gunakan Form Request untuk semua input.
+- Gunakan `$request->validated()`, bukan `$request->all()`.
+- Blade otomatis meng-escape {{ }}; jangan memakai {!! !!} untuk input user.
+- Deskripsi tugas berupa plain text. Jangan simpan HTML mentah.
+- Batasi panjang input agar tidak ada data raksasa.
+- Tanggal divalidasi format dan rentangnya.
+- File upload tidak ada pada versi ini, jadi tidak perlu aturan file.
+
+6.5. CHECKLIST KEAMANAN
+
+[ ] CSRF token pada semua form (@csrf) dan header X-CSRF-TOKEN untuk fetch.
+[ ] Password di-hash (bawaan Laravel, jangan pernah hash manual).
+[ ] Session regenerate setelah login dan invalidate setelah logout (Breeze).
+[ ] Rate limit login aktif (bawaan Breeze).
+[ ] Semua route data memakai middleware auth.
+[ ] Semua aksi ubah/hapus memakai Policy.
+[ ] course_id divalidasi kepemilikannya.
+[ ] Tidak ada user_id dari request.
+[ ] Tidak ada data user lain di dashboard, notifikasi, kalender, atau Kanban.
+[ ] Pesan error validasi tidak membocorkan data user lain.
+[ ] APP_DEBUG=false di produksi.
+[ ] .env tidak di-commit.
+[ ] HTTPS di produksi.
+[ ] Jangan menampilkan stack trace atau query ke pengguna.
+
+6.6. PENGUJIAN KEAMANAN MINIMAL
+
+- Guest membuka /tasks -> redirect ke /login.
+- User A membuka /tasks/{id-milik-B} -> 403/404.
+- User A mengirim course_id milik B saat membuat task -> 422.
+- User A mengubah status task milik B -> 403/404.
+- User A melihat kalender/notifikasi -> hanya data A.
+- User A menghapus task B -> 403/404 dan data B tetap ada.
+
+
+================================================================================
+7. ROUTE DAN CONTROLLER
+================================================================================
+
+7.1. DAFTAR ROUTE
+
+Semua route berikut di dalam grup middleware(['auth']):
+
+| Method | URI                        | Name              | Fungsi |
+|--------|----------------------------|-------------------|--------|
+| GET    | /dashboard                 | dashboard         | Ringkasan + rekomendasi |
+| GET    | /tasks                     | tasks.index       | Daftar + search + filter |
+| GET    | /tasks/create              | tasks.create      | Form tugas |
+| POST   | /tasks                     | tasks.store       | Simpan tugas |
+| GET    | /tasks/{task}              | tasks.show        | Detail tugas |
+| GET    | /tasks/{task}/edit         | tasks.edit        | Form edit |
+| PUT    | /tasks/{task}              | tasks.update      | Update tugas |
+| DELETE | /tasks/{task}              | tasks.destroy     | Hapus tugas |
+| PATCH  | /tasks/{task}/status       | tasks.status      | Ubah status (Kanban) |
+| GET    | /courses                   | courses.index     | Daftar mata kuliah |
+| GET    | /courses/create            | courses.create    | Form mata kuliah |
+| POST   | /courses                   | courses.store     | Simpan mata kuliah |
+| GET    | /courses/{course}/edit     | courses.edit      | Form edit |
+| PUT    | /courses/{course}          | courses.update    | Update mata kuliah |
+| DELETE | /courses/{course}          | courses.destroy   | Hapus mata kuliah |
+| GET    | /kanban                    | kanban.index      | Kanban Board |
+| GET    | /calendar                  | calendar.index    | Kalender bulanan |
+| POST   | /agendas                   | agendas.store     | Tambah agenda |
+| PUT    | /agendas/{agenda}          | agendas.update    | Ubah agenda |
+| DELETE | /agendas/{agenda}          | agendas.destroy   | Hapus agenda |
+| GET    | /notifications             | notifications.index | Daftar notifikasi deadline |
+
+Catatan:
+- courses tidak perlu halaman show; daftar + modal/edit cukup.
+- agendas tidak perlu index/show terpisah; ditampilkan di kalender.
+- Breeze sudah menyediakan route auth, profile, dan password.
+
+7.2. CONTROLLER
+
+DashboardController@__invoke atau @index:
+- Hitung statistik: total task, todo, in_progress, done, overdue.
+- Ambil 5 rekomendasi teratas untuk tugas yang belum selesai.
+- Ambil deadline 7 hari ke depan.
+- Tampilkan tugas terbaru.
+- Semua query memakai user yang login.
+
+TaskController:
+- index: search + filter + pagination + with('course').
+- create: kirim daftar course milik user.
+- store: StoreTaskRequest, buat lewat relasi user.
+- show: authorize view, load course.
+- edit: authorize update, kirim daftar course.
+- update: UpdateTaskRequest, authorize, update.
+- destroy: authorize delete, hapus.
+- updateStatus: UpdateTaskStatusRequest, authorize update, update status,
+  kembalikan JSON untuk Kanban (status, label, counts) atau redirect back.
+
+CourseController: CRUD dengan validasi unik per user dan policy.
+
+KanbanController@index:
+- Ambil semua task user, eager load course.
+- Kelompokkan berdasarkan status.
+- Hitung rekomendasi untuk tiap task.
+- Kirim struktur kolom ke view.
+
+CalendarController@index:
+- Validasi parameter month (format Y-m), fallback ke bulan berjalan.
+- Hitung rentang grid kalender.
+- Ambil task user dengan deadline pada rentang tersebut.
+- Ambil agenda user pada rentang tanggal tersebut.
+- Kelompokkan per tanggal di controller atau view (lebih baik controller).
+- Kirim data ke view.
+
+AgendaController:
+- store: validasi, buat lewat relasi user, redirect ke bulan/tanggal asal.
+- update: authorize, update.
+- destroy: authorize, hapus.
+- redirect kembali ke kalender pada bulan agenda.
+
+NotificationController@index:
+- Query task user yang belum selesai dan deadline <= 7 hari.
+- Kelompokkan: terlambat, hari ini, 1-3 hari, 4-7 hari.
+- Urutkan deadline naik.
+- Hitung jumlah per kelompok.
+
+7.3. RESPONSE
+
+- Form biasa: redirect + flash message sukses/gagal.
+- Kanban: JSON untuk fetch, tetapi tetap dukung redirect untuk fallback tanpa JS.
+- Validasi gagal: 422 + error JSON untuk fetch, redirect + error bag untuk form.
+- Gunakan status HTTP yang benar: 200, 201, 302, 403, 404, 422.
+- Jangan mengembalikan seluruh data user lain dalam respons error.
+
+7.4. QUERY SCOPE PADA MODEL TASK (OPSIONAL, DISARANKAN)
+
+Scope yang bisa dibuat:
+- scopeOwnedBy($query, User $user)
+- scopeSearch($query, ?string $term)
+- scopeFilter($query, array $filters)
+- scopeNotDone($query)
+- scopeDueWithin($query, int $days)
+- scopeOverdue($query)
+
+Contoh pemakaian:
+    $tasks = $request->user()->tasks()
+        ->with('course')
+        ->search($filters['q'] ?? null)
+        ->filter($filters)
+        ->orderBy('deadline')
+        ->paginate(12)
+        ->withQueryString();
+
+Selalu batasi query dari relasi user, walaupun scope juga memfilter.
+
+
+================================================================================
+8. VALIDASI INPUT
+================================================================================
+
+8.1. REGISTER (Breeze)
+
+- name: required, string, max 100
+- email: required, email, max 255, unique users
+- password: required, confirmed, min 8, gunakan Password::defaults()
+- jangan menerima role atau is_admin dari form
+
+8.2. COURSE
+
+StoreCourseRequest / UpdateCourseRequest:
+- name: required, string, max 100
+- code: nullable, string, max 20
+- color: nullable, regex /^#[0-9A-Fa-f]{6}$/
+- unique name per user:
+    Rule::unique('courses', 'name')->where('user_id', $this->user()->id)
+    ->ignore($course)
+- Update: authorize kepemilikan course.
+
+8.3. TASK
+
+StoreTaskRequest / UpdateTaskRequest:
+- title: required, string, max 150
+- description: nullable, string, max 5000
+- course_id: nullable, integer,
+  Rule::exists('courses', 'id')->where(user_id = user login)
+- deadline: required, date
+  (boleh tanggal lampau; UI menandai terlambat)
+- difficulty: required, Rule::enum(Difficulty::class)
+- status: required, Rule::enum(TaskStatus::class)
+  (boleh juga di-set default todo saat create)
+- user_id: JANGAN ada di validasi; diisi server.
+
+UpdateTaskStatusRequest:
+- status: required, Rule::enum(TaskStatus::class)
+
+8.4. AGENDA
+
+StoreAgendaRequest / UpdateAgendaRequest:
+- date: required, date
+- start_time: nullable, date_format:H:i
+- title: required, string, max 150
+- description: nullable, string, max 2000
+
+8.5. FILTER (QUERY STRING)
+
+Validasi parameter di TaskController@index:
+- q: nullable, string, max 100
+- course_id: nullable, integer, harus milik user
+- status: nullable, Rule::enum(TaskStatus::class)
+- difficulty: nullable, Rule::enum(Difficulty::class)
+- deadline_from: nullable, date
+- deadline_to: nullable, date, after_or_equal:deadline_from
+- page: integer, min 1
+
+Jika filter tidak valid, kembalikan 422 atau abaikan dengan aman. Jangan
+meneruskan string mentah ke query.
+
+8.6. PESAN ERROR
+
+- Gunakan pesan bahasa Indonesia di Form Request (attributes()/messages()).
+- Tampilkan error di dekat field dengan @error dan class merah.
+- Saat validasi gagal, old input harus tetap terisi.
+- Jangan hanya mengandalkan alert() JavaScript.
+
+
+================================================================================
+9. FITUR DAN ALUR KERJA
+================================================================================
+
+9.1. LAYOUT DAN NAVIGASI
+
+Struktur halaman:
+- Sidebar desktop (lebar 240px): logo, Dashboard, Tugas, Kanban, Kalender,
+  Notifikasi, Mata Kuliah, lalu menu user (profile/logout).
+- Mobile: top bar dengan tombol hamburger, drawer/bottom sheet navigasi.
+- Header halaman: judul + deskripsi singkat + tombol aksi utama.
+- Flash message sukses/gagal di atas konten.
+- Konten utama max-width 7xl, padding responsif.
+- Semua halaman kecuali auth memakai layout yang sama.
+
+Navbar notifikasi:
+- Tampilkan badge kecil jumlah tugas terlambat + jatuh tempo hari ini.
+- Badge dihitung dari data user yang login, bukan angka statis.
+- Klik badge menuju /notifications.
+
+9.2. DASHBOARD
+
+Konten:
+1. Sapaan: "Halo, {nama}" + tanggal hari ini.
+2. Kartu statistik: Total tugas aktif, To Do, In Progress, Done, Terlambat.
+3. Panel "Rekomendasi Fokus" (maksimal 5):
+   - judul, mata kuliah, deadline, badge prioritas, alasan.
+   - Tautan ke detail tugas.
+   - Tulis jelas: "Rekomendasi, bukan urutan otomatis."
+4. Panel "Deadline Terdekat" (7 hari): judul, course, tanggal, status.
+5. Panel "Tugas Terbaru" atau aktivitas.
+6. Tombol cepat: Tambah Tugas, Buka Kanban, Buka Kalender.
+
+Aturan:
+- Tugas done tidak masuk rekomendasi dan notifikasi, tetapi tetap dihitung
+  di statistik Done.
+- Semua angka dihitung dari database saat request, bukan di-cache di session.
+- Jika belum ada data, tampilkan empty state dengan CTA.
+
+9.3. MATA KULIAH (COURSES)
+
+Halaman daftar:
+- Tabel/card: nama, kode, warna, jumlah tugas, aksi edit/hapus.
+- Tombol tambah.
+- Modal atau halaman form sederhana.
+- Validasi unik per user.
+- Hapus course meminta konfirmasi; jelaskan tugas terkait tidak terhapus,
+  hanya kehilangan label mata kuliah.
+- Jumlah tugas per course dihitung dengan withCount('tasks').
+
+Form:
+- Nama wajib; kode opsional; warna opsional (pilihan preset + color input).
+- Error inline.
+
+9.4. TUGAS (TASKS)
+
+Daftar tugas:
+- Card/table responsif: judul, course chip, deadline, difficulty badge,
+  status badge, priority badge, aksi lihat/edit/hapus.
+- Urut default: deadline terdekat; sediakan opsi urut (deadline, judul,
+  dibuat terbaru) jika mudah.
+- Pagination 12 per halaman, pertahankan query filter.
+- Search bar + filter (lihat bagian 10).
+- Empty state: "Belum ada tugas" + tombol tambah.
+- Tugas terlambat: teks deadline merah + label "Terlambat".
+- Tugas done: visual lebih redup, tetap bisa dilihat.
+
+Detail tugas:
+- Judul, deskripsi, course, deadline lengkap, difficulty, status,
+  rekomendasi + alasan, tanggal dibuat/diubah.
+- Tombol edit, hapus, ubah status.
+- Kembali ke daftar dengan filter sebelumnya jika memungkinkan (use back()).
+
+Form tambah/edit:
+- Judul, deskripsi (textarea), select course (hanya milik user), date-time
+  deadline, select difficulty, select status.
+- Tombol simpan + batal.
+- Konfirmasi sebelum meninggalkan form dengan perubahan? Opsional.
+- Setelah simpan: redirect ke detail atau daftar + flash sukses.
+
+Hapus:
+- Modal konfirmasi (Alpine) atau confirm native.
+- Setelah hapus: redirect + flash sukses.
+- Pastikan deadline hilang dari kalender dan notifikasi pada request berikutnya.
+
+9.5. KANBAN BOARD
+
+Tampilan:
+- Tiga kolom: To Do, In Progress, Done.
+- Header kolom: nama + jumlah tugas.
+- Kartu: judul, course chip, deadline, difficulty, priority badge.
+- Warna kolom konsisten dengan status badge.
+- Desktop: 3 kolom sejajar; mobile: tab status atau horizontal scroll.
+
+Interaksi drag & drop:
+- Gunakan SortableJS pada container kolom.
+- Saat kartu dipindah:
+  1. Simpan posisi lama untuk rollback.
+  2. Update UI optimistis, update counter kolom.
+  3. Kirim PATCH /tasks/{id}/status via fetch dengan JSON {status}.
+  4. Sertakan header X-CSRF-TOKEN dari meta tag.
+  5. Jika respons gagal: kembalikan kartu ke kolom lama, tampilkan toast error.
+  6. Nonaktifkan drag sementara request berjalan untuk task tersebut.
+- Server memvalidasi enum status dan kepemilikan task.
+- Fallback tanpa JS/mobile: select status di setiap kartu, submit form biasa.
+
+Sinkronisasi:
+- Tidak ada tabel/status duplikat.
+- Setelah status berubah, dashboard, daftar, notifikasi, dan kalender
+  otomatis mengikuti karena semuanya membaca tasks.status.
+- Jika kartu dipindah ke Done, hilangkan dari rekomendasi/notifikasi pada
+  request berikutnya.
+
+Acceptance:
+- Refresh halaman setelah drag tetap menunjukkan status baru.
+- Dua user tidak bisa saling mengubah status.
+- Counter kolom sesuai jumlah kartu.
+- Tidak ada error console dan tidak ada request ganda.
+
+9.6. REKOMENDASI PENGERJAAN (DETERMINISTIK)
+
+Lihat algoritma lengkap di bagian 11.
+
+Prinsip:
+- Hanya memakai tingkat kesulitan + sisa waktu deadline.
+- Tidak memakai AI/ML, tidak memanggil API eksternal.
+- Hasil dapat dijelaskan dan diuji.
+- Hanya rekomendasi; aplikasi tidak mengurutkan tugas secara otomatis di
+  daftar utama dan tidak mengubah status.
+- Tugas done dikecualikan.
+- Tampilkan label: Prioritas Tinggi, Prioritas Sedang, Prioritas Rendah.
+- Tampilkan alasan singkat yang bisa dibaca manusia.
+
+9.7. PENCARIAN DAN FILTER
+
+Lihat bagian 10.
+
+9.8. NOTIFIKASI DEADLINE
+
+Lihat bagian 13.
+
+9.9. KALENDER DAN AGENDA
+
+Lihat bagian 12.
+
+9.10. AUTENTIKASI
+
+- Halaman register: nama, email, password, konfirmasi password.
+- Halaman login: email, password, remember me, link forgot password.
+- Logout: POST + CSRF, bukan link GET.
+- Setelah logout session dihapus.
+- Jika sudah login membuka /login atau /register, redirect ke dashboard.
+- Tampilkan pesan error login yang umum, jangan membocorkan apakah email
+  terdaftar atau password salah.
+- Email verification tidak wajib untuk demo; jangan aktifkan jika membuat
+  alur demo rumit. Jika diaktifkan, sediakan cara verifikasi lokal (log).
+
+
+================================================================================
+10. PENCARIAN DAN FILTER
+================================================================================
+
+10.1. PARAMETER QUERY
+
+    q              -> kata kunci judul/deskripsi
+    course_id      -> id mata kuliah milik user
+    status         -> todo|in_progress|done
+    difficulty     -> mudah|sedang|sulit
+    deadline_from  -> YYYY-MM-DD
+    deadline_to    -> YYYY-MM-DD
+    sort           -> deadline|created_at|title (opsional)
+    page           -> halaman
+
+10.2. PERILAKU
+
+- Semua filter digabung dengan AND.
+- Search mencakup title dan description (case-insensitive sesuai collation).
+- Filter course hanya menampilkan course milik user.
+- Rentang deadline inklusif: dari awal hari deadline_from sampai akhir hari
+  deadline_to.
+- Kombinasi filter dipertahankan saat pagination (withQueryString).
+- Tombol "Reset" menghapus semua query filter.
+- Tampilkan badge jumlah filter aktif.
+- Jika tidak ada hasil, tampilkan empty state + tombol reset.
+- Search bar memakai debounce 300ms (Alpine) atau tombol cari; jangan
+  mengirim request setiap ketikan tanpa debounce.
+- Filter disimpan di URL agar bisa di-refresh/di-bookmark.
+
+10.3. IMPLEMENTASI
+
+Gunakan scope di model atau query builder:
+
+    $query = $request->user()->tasks()->with('course');
+
+    $query->when($filters['q'] ?? null, function ($q, $term) {
+        $q->where(function ($sub) use ($term) {
+            $sub->where('title', 'like', "%{$term}%")
+                ->orWhere('description', 'like', "%{$term}%");
+        });
+    });
+
+    $query->when($filters['course_id'] ?? null, fn ($q, $id) =>
+        $q->where('course_id', $id)
+    );
+
+    $query->when($filters['status'] ?? null, fn ($q, $status) =>
+        $q->where('status', $status)
+    );
+
+    $query->when($filters['difficulty'] ?? null, fn ($q, $difficulty) =>
+        $q->where('difficulty', $difficulty)
+    );
+
+    $query->when($filters['deadline_from'] ?? null, fn ($q, $from) =>
+        $q->where('deadline', '>=', Carbon::parse($from)->startOfDay())
+    );
+
+    $query->when($filters['deadline_to'] ?? null, fn ($q, $to) =>
+        $q->where('deadline', '<=', Carbon::parse($to)->endOfDay())
+    );
+
+Catatan keamanan:
+- course_id dan filter lain divalidasi, bukan langsung dari request.
+- Hindari `%` dan `_` liar pada LIKE jika ingin hasil presisi; minimal batasi
+  panjang q. Untuk kebutuhan tugas, LIKE sederhana cukup.
+- Jangan memakai `orderByRaw` dengan input user.
+
+10.4. UI FILTER
+
+- Form GET di atas daftar tugas.
+- Search input dengan ikon.
+- Select mata kuliah, status, difficulty.
+- Dua input tanggal (from/to).
+- Tombol "Terapkan" dan "Reset".
+- Di mobile, filter bisa dilipat dalam panel/drawer agar tidak memenuhi layar.
+- Tampilkan chip filter aktif dengan tombol hapus per filter (opsional tapi
+  bagus untuk UX).
+
+10.5. TEST FILTER
+
+- q menemukan judul dan deskripsi.
+- course_id hanya course sendiri; course user lain -> 422/empty.
+- status + difficulty + date range digabung benar.
+- Pagination mempertahankan query.
+- Reset menghapus semua filter.
+- Filter tidak membocorkan tugas user lain.
+
+
+================================================================================
+11. ALGORITMA REKOMENDASI (TANPA AI)
+================================================================================
+
+11.1. INPUT
+
+- difficulty: mudah=1, sedang=2, sulit=3.
+- deadline: dihitung relatif terhadap now() di timezone Asia/Jakarta.
+- status: hanya tugas selain done yang diberi rekomendasi.
+
+11.2. SKOR URGENSI DEADLINE
+
+Gunakan selisih hari kalender (startOfDay) dan cek apakah deadline sudah lewat.
+
+    deadline sudah lewat (< now)          -> urgensi 3
+    deadline hari ini / <= 1 hari lagi    -> urgensi 3
+    2-3 hari lagi                         -> urgensi 2
+    4-7 hari lagi                         -> urgensi 1
+    > 7 hari lagi                         -> urgensi 0
+
+11.3. SKOR TOTAL
+
+    skor = bobot_kesulitan + urgensi_deadline
+    rentang skor: 1 sampai 6
+
+11.4. LABEL PRIORITAS
+
+    Jika deadline sudah lewat          -> Prioritas Tinggi (paksa)
+    Jika skor >= 5                     -> Prioritas Tinggi
+    Jika skor 3 atau 4                 -> Prioritas Sedang
+    Jika skor <= 2                     -> Prioritas Rendah
+
+11.5. ALASAN (BAHASA INDONESIA)
+
+Susun dari dua bagian:
+- "Tingkat kesulitan {mudah/sedang/sulit}."
+- Kondisi deadline:
+  - lewat: "Deadline sudah terlewat {n} hari."
+  - <= 1 hari: "Deadline kurang dari 24 jam lagi."
+  - 2-3 hari: "Deadline tinggal {n} hari lagi."
+  - 4-7 hari: "Deadline {n} hari lagi."
+  - > 7 hari: "Deadline masih {n} hari lagi."
+
+Contoh alasan:
+- "Tingkat kesulitan sulit; deadline kurang dari 24 jam lagi."
+- "Tingkat kesulitan sedang; deadline tinggal 3 hari lagi."
+- "Tingkat kesulitan mudah; deadline masih 10 hari lagi."
+
+Jangan memakai kalimat yang menakut-nakuti atau menyalahkan pengguna.
+
+11.6. CONTOH PERHITUNGAN
+
+| Kesulitan | Deadline        | Skor | Label   | Alasan singkat |
+|-----------|-----------------|------|---------|----------------|
+| sulit     | sudah lewat     | 6    | Tinggi  | lewat + sulit |
+| sulit     | hari ini        | 6    | Tinggi  | <24 jam + sulit |
+| sulit     | 2 hari lagi     | 5    | Tinggi  | urgent + sulit |
+| sulit     | 5 hari lagi     | 4    | Sedang  | dekat + sulit |
+| sedang    | 3 hari lagi     | 4    | Sedang  | dekat + sedang |
+| mudah     | 2 hari lagi     | 3    | Sedang  | urgent + mudah |
+| mudah     | 6 hari lagi     | 2    | Rendah  | dekat + mudah |
+| sulit     | 10 hari lagi    | 3    | Sedang  | masih lama tapi sulit |
+| apa pun   | status done     | -    | -       | tidak direkomendasikan |
+
+11.7. PSEUDOCODE
+
+    public function recommend(Task $task): Recommendation
+    {
+        if ($task->status === TaskStatus::Done) {
+            return Recommendation::done();
+        }
+
+        $difficultyScore = match ($task->difficulty) {
+            Difficulty::Easy => 1,
+            Difficulty::Medium => 2,
+            Difficulty::Hard => 3,
+        };
+
+        $now = now();
+        $deadline = $task->deadline;
+        $isOverdue = $deadline->lt($now);
+        $days = $now->copy()->startOfDay()
+            ->diffInDays($deadline->copy()->startOfDay(), false);
+
+        $urgency = match (true) {
+            $isOverdue => 3,
+            $days <= 1 => 3,
+            $days <= 3 => 2,
+            $days <= 7 => 1,
+            default => 0,
+        };
+
+        $score = $difficultyScore + $urgency;
+
+        $priority = match (true) {
+            $isOverdue => Priority::High,
+            $score >= 5 => Priority::High,
+            $score >= 3 => Priority::Medium,
+            default => Priority::Low,
+        };
+
+        return new Recommendation(
+            priority: $priority,
+            score: $score,
+            reason: $this->buildReason($task, $days, $isOverdue),
+        );
+    }
+
+11.8. ATURAN TAMBAHAN
+
+- Hitung di server (PHP), bukan JavaScript, agar konsisten di semua halaman.
+- Jangan menyimpan skor/label di database.
+- Batasi waktu now() sekali per request bila menampilkan banyak tugas, agar
+  label tidak berubah di tengah render.
+- Timezone aplikasi: Asia/Jakarta. Pastikan deadline dari input diparse
+  dengan timezone yang sama.
+- Tugas tanpa deadline tidak ada pada versi ini karena deadline wajib.
+- Tugas done tidak ditampilkan di panel rekomendasi dan notifikasi.
+- Rekomendasi tidak mengubah status atau urutan default daftar tugas.
+
+11.9. TEST UNIT YANG WAJIB
+
+Gunakan Carbon::setTestNow() agar hasil deterministik:
+- sulit + lewat -> Tinggi
+- sulit + hari ini -> Tinggi
+- sulit + 2 hari -> Tinggi
+- sulit + 5 hari -> Sedang
+- sedang + 3 hari -> Sedang
+- mudah + 2 hari -> Sedang
+- mudah + 6 hari -> Rendah
+- sulit + 10 hari -> Sedang
+- done -> tidak ada rekomendasi
+- alasan memuat tingkat kesulitan dan info deadline
+- batas 7/8 hari diuji (off-by-one)
+
+
+================================================================================
+12. KALENDER VISUAL DAN AGENDA
+================================================================================
+
+12.1. TAMPILAN
+
+- Tampilan utama: bulanan, grid 7 kolom (Senin-Minggu).
+- Header: nama bulan + tahun, tombol prev/next, tombol "Hari ini".
+- Baris hari: Sen, Sel, Rab, Kam, Jum, Sab, Min.
+- Sel tanggal: tanggal, daftar deadline tugas, daftar agenda manual.
+- Tanggal hari ini diberi highlight.
+- Tanggal di luar bulan berjalan tetap ditampilkan redup.
+- Legend visual:
+  - Deadline tugas: badge merah/rose + ikon clipboard/check-square.
+  - Agenda manual: chip indigo/violet + ikon catatan.
+- Klik tanggal kosong: buka modal tambah agenda.
+- Klik deadline tugas: buka detail tugas.
+- Klik agenda: buka modal edit/hapus.
+
+12.2. PERHITUNGAN GRID
+
+Gunakan Carbon:
+    $month = Carbon::createFromFormat('Y-m', $request->month ?? now()->format('Y-m'))->startOfMonth();
+    $gridStart = $month->copy()->startOfWeek(Carbon::MONDAY);
+    $gridEnd = $month->copy()->endOfWeek(Carbon::SUNDAY);
+
+Loop dari gridStart sampai gridEnd (CarbonPeriod) menghasilkan 35/42 sel.
+Validasi parameter month dengan date_format:Y-m; jika tidak valid, gunakan
+bulan berjalan.
+
+12.3. DATA UNTUK KALENDER
+
+Task:
+    $tasks = $request->user()->tasks()
+        ->with('course')
+        ->whereBetween('deadline', [$gridStart->copy()->startOfDay(), $gridEnd->copy()->endOfDay()])
+        ->get()
+        ->groupBy(fn ($task) => $task->deadline->format('Y-m-d'));
+
+Agenda:
+    $agendas = $request->user()->agendas()
+        ->whereBetween('date', [$gridStart->toDateString(), $gridEnd->toDateString()])
+        ->orderBy('start_time')
+        ->get()
+        ->groupBy(fn ($agenda) => $agenda->date->format('Y-m-d'));
+
+Tampilkan semua task yang punya deadline, termasuk yang done (beri gaya
+redup), karena spesifikasi meminta setiap deadline tampil. Notifikasi dan
+rekomendasi tetap mengecualikan done.
+
+12.4. AGENDA MANUAL
+
+Form agenda:
+- tanggal (date)
+- judul (required, max 150)
+- deskripsi (optional, max 2000)
+- waktu mulai (optional, H:i)
+
+Aturan:
+- Agenda adalah entitas terpisah.
+- Jangan membuat agenda dari task, dan sebaliknya.
+- Saat task deadline berubah, kalender otomatis menampilkan tanggal baru
+  karena query langsung ke tasks.deadline.
+- Saat task dihapus, deadline hilang otomatis.
+- Saat agenda dihapus, hanya agenda yang hilang; task tidak terpengaruh.
+- Redirect setelah simpan/edit/hapus kembali ke bulan yang sama.
+
+12.5. UX KALENDER
+
+Desktop:
+- Sel kalender min-height 120px, menampilkan maksimal 3 item + "+N lagi".
+- Item bisa diklik.
+- Modal agenda dengan form; validasi error tampil di modal.
+
+Mobile:
+- Grid tetap 7 kolom tetapi item hanya titik/angka; ketuk tanggal untuk
+  membuka daftar lengkap hari tersebut di panel bawah/modal.
+- Jangan memaksa teks panjang di sel sempit.
+- Tombol tambah agenda jelas.
+
+Empty state:
+- Jika tidak ada deadline/agenda pada bulan itu, tampilkan pesan ringan di
+  bawah grid atau panel samping, bukan menghilangkan kalender.
+
+12.6. TEST KALENDER
+
+- Tugas dengan deadline bulan ini muncul di tanggal yang benar.
+- Tugas dengan deadline di luar grid tidak muncul.
+- Mengubah deadline memindahkan tampilan tanpa membuat duplikat.
+- Menghapus task menghilangkan badge dari kalender.
+- Agenda manual tampil berbeda dan tidak membuat task.
+- User lain tidak melihat agenda/deadline user A.
+- Navigasi bulan memuat data bulan yang benar.
+- Parameter month tidak valid tidak error 500.
+
+
+================================================================================
+13. NOTIFIKASI DEADLINE
+================================================================================
+
+13.1. SUMBER DATA
+
+Tidak perlu tabel notifications. Notifikasi dihitung saat request dari
+tasks milik user yang login:
+- status != done
+- deadline <= now()->addDays(7)
+- urut deadline ascending
+
+13.2. KELOMPOK
+
+1. Terlambat        : deadline < now
+2. Hari ini         : deadline antara awal dan akhir hari ini
+3. 1-3 hari lagi    : deadline > akhir hari ini dan <= 3 hari
+4. 4-7 hari lagi    : deadline > 3 hari dan <= 7 hari
+
+Tampilkan:
+- judul tugas
+- mata kuliah (atau "Tanpa mata kuliah")
+- tanggal + jam deadline
+- status pengerjaan
+- badge prioritas (opsional, konsisten dengan service)
+- tombol "Lihat tugas"
+
+13.3. ATURAN
+
+- Tugas done tidak muncul.
+- Tugas dengan deadline > 7 hari tidak masuk halaman ini (boleh tampil di
+  dashboard "deadline terdekat" jika diinginkan).
+- Jumlah di badge navbar = overdue + due today.
+- Data selalu segar karena query per request; tidak perlu cron/queue.
+- Jangan menampilkan notifikasi milik user lain.
+- Jangan menandai "sudah dibaca" jika tidak ada tabel notifikasi; fitur itu
+  tidak diminta. Jika ingin, tambahkan nanti sebagai fitur opsional.
+- Tampilkan empty state jika tidak ada deadline dekat.
+
+13.4. TEST
+
+- Batas 7 hari inklusif; hari ke-8 tidak muncul.
+- Tugas lewat masuk kelompok terlambat, bukan hari ini.
+- Tugas done tidak muncul di kelompok mana pun.
+- Isolasi user.
+- Perubahan deadline langsung tercermin setelah refresh.
+- Perubahan status ke done menghilangkan dari notifikasi.
+
+
+================================================================================
+14. UI/UX DAN DESAIN VISUAL
+================================================================================
+
+14.1. ARAH DESAIN
+
+- Bersih, lapang, fokus pada konten. Hindari template admin yang ramai.
+- Gunakan kartu putih di atas latar slate-50, border halus, shadow kecil.
+- Sudut membulat (rounded-xl), spacing konsisten (4/6/8).
+- Aksen utama indigo/blue; status dan prioritas memakai warna semantik.
+- Gunakan ikon sederhana, jangan berlebihan.
+- Teks UI bahasa Indonesia, konsisten (jangan campur "Task" dan "Tugas"
+  dalam satu label).
+
+14.2. DESIGN TOKEN (CONTOH)
+
+Latar aplikasi      : slate-50 (#F8FAFC)
+Permukaan kartu     : white
+Teks utama          : slate-900
+Teks sekunder       : slate-500/600
+Border              : slate-200
+Aksen utama         : indigo-600 (#4F46E5)
+Aksen hover         : indigo-700
+To Do               : slate-500
+In Progress         : amber-500
+Done                : emerald-600
+Prioritas Tinggi    : rose-600
+Prioritas Sedang    : amber-600
+Prioritas Rendah    : sky-600
+Deadline terlambat  : rose-600
+Agenda manual       : violet-600
+Deadline tugas      : rose-500
+
+Jangan mengandalkan warna saja; sertakan teks/ikon agar ramah buta warna.
+
+14.3. KOMPONEN WAJIB
+
+- x-app-layout / layouts/app.blade.php
+- x-page-header (judul + deskripsi + aksi)
+- x-stat-card (label, angka, ikon, warna)
+- x-badge (status, difficulty, priority)
+- x-task-card (untuk daftar/kanban)
+- x-empty-state (ikon, pesan, CTA)
+- x-modal (Alpine, focus trap sederhana)
+- x-confirm-dialog (hapus)
+- x-filter-bar
+- x-flash-message
+- x-form.input, x-form.select, x-form.textarea, x-form.error
+- x-pagination (bawaan Laravel)
+
+Konsistenkan pemakaian; jangan menulis ulang class tombol di banyak file.
+
+14.4. RESPONSIF
+
+Breakpoint Tailwind:
+- < 640px  : mobile, satu kolom, navigasi drawer.
+- 640-1024 : tablet, dua kolom untuk kartu/statistik.
+- >= 1024  : desktop, sidebar tetap, Kanban 3 kolom, kalender penuh.
+
+Aturan:
+- Tabel berubah menjadi card stack di mobile.
+- Tombol aksi minimal 44x44px di layar sentuh.
+- Kanban: tab status di mobile atau scroll horizontal dengan snap.
+- Kalender: ringkas di mobile, detail via modal.
+- Form: input full width, label di atas.
+- Jangan ada horizontal scroll yang tidak disengaja.
+- Uji di lebar 375px, 768px, 1280px.
+
+14.5. AKSESIBILITAS
+
+- Gunakan elemen semantik: header, nav, main, section, button.
+- Setiap input punya <label> atau aria-label.
+- Fokus keyboard terlihat (focus-visible ring).
+- Modal: fokus masuk ke modal, Esc menutup, klik backdrop menutup.
+- Tombol hapus memakai konfirmasi; jangan langsung hapus.
+- Alt text untuk ikon bermakna; ikon dekoratif aria-hidden.
+- Kontras teks minimal 4.5:1.
+- Jangan mematikan outline tanpa pengganti.
+- Kanban punya fallback select status agar bisa dioperasikan tanpa drag.
+- Gunakan aria-live untuk flash message/toast.
+
+14.6. FEEDBACK DAN STATE
+
+- Loading: disable tombol simpan, tampilkan spinner kecil.
+- Sukses: toast/flash hijau.
+- Gagal: toast merah + error inline.
+- Empty: ilustrasi/ikon sederhana + penjelasan + CTA.
+- Error 404/403: halaman sederhana dengan tombol kembali.
+- Konfirmasi hapus: sebutkan judul data yang akan dihapus.
+- Jangan memakai alert()/confirm() bawaan browser untuk pengalaman utama
+  (boleh sebagai fallback), gunakan modal Alpine.
+
+14.7. RINGAN
+
+- Impor SortableJS hanya di halaman Kanban (dynamic import atau @push script).
+- Jangan memuat library di semua halaman.
+- Gunakan font sistem:
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif.
+  Jika ingin Inter, self-host satu file variable font; jangan banyak weight.
+- Ikon SVG inline; jangan icon font.
+- Pagination server-side; jangan load semua data.
+- Eager loading course.
+- Hindari animasi berat; gunakan transition 150-200ms.
+- Jalankan npm run build dan cek ukuran output.
+- Target nilai Lighthouse Performance >= 85 di mobile (bukan harga mati).
+
+14.8. TEMA GELAP (OPSIONAL)
+
+- Baru dikerjakan setelah semua fitur stabil.
+- Gunakan class dark: Tailwind + toggle di localStorage.
+- Jangan menambah kerumitan sebelum fitur inti selesai.
+- Jika waktu terbatas, lewati; konsistensi terang lebih penting.
+
+
+================================================================================
+15. TAHAPAN IMPLEMENTASI (ROADMAP)
+================================================================================
+
+Asumsi: 3-4 orang, 2-3 minggu, 4-6 jam efektif per hari. Sesuaikan.
+
+FASE 0 - SETUP (0,5-1 hari)
+Tugas:
+- Buat proyek Laravel + Breeze (bagian 3).
+- Konfigurasi .env, database, timezone.
+- Git init/commit awal, .gitignore benar.
+- Pastikan login/register/logout Breeze berjalan.
+- Buat layout dasar + navigasi kosong.
+Selesai jika:
+- Aplikasi jalan, halaman auth tampil, database terkoneksi, npm build sukses.
+
+FASE 1 - DATABASE + MODEL (1 hari)
+Tugas:
+- Migration courses, tasks, agendas.
+- Model + relasi + cast enum.
+- Enum TaskStatus, Difficulty.
+- Factory + DemoSeeder 2 user.
+- Policy dasar.
+Selesai jika:
+- migrate:fresh --seed sukses, relasi benar, data demo tampil via tinker.
+
+FASE 2 - AUTENTIKASI + LAYOUT (1 hari)
+Tugas:
+- Rapikan layout Breeze, sidebar/topbar, flash message.
+- Middleware auth pada semua route aplikasi.
+- Halaman 403/404 sederhana.
+- Navbar + badge notifikasi (placeholder dulu).
+Selesai jika:
+- Guest tidak bisa akses halaman aplikasi; user login melihat dashboard kosong.
+
+FASE 3 - COURSES (1 hari)
+Tugas:
+- CRUD course + Form Request + Policy.
+- Daftar + form + validasi unik per user.
+- withCount tasks.
+Selesai jika:
+- User bisa CRUD course sendiri; tidak bisa menyentuh course user lain.
+
+FASE 4 - TASKS CRUD (1,5-2 hari)
+Tugas:
+- CRUD task + Form Request + Policy.
+- Course select hanya milik user.
+- Detail, edit, hapus, konfirmasi.
+- Badge status/difficulty/deadline.
+Selesai jika:
+- Semua field tersimpan, validasi jalan, isolasi data terbukti.
+
+FASE 5 - DASHBOARD + FILTER + SEARCH (1,5 hari)
+Tugas:
+- Statistik, deadline terdekat, tugas terbaru.
+- Search + filter kombinasi + reset + pagination.
+- Query scope.
+Selesai jika:
+- Filter bisa digabung, URL menyimpan filter, hasil hanya milik user.
+
+FASE 6 - KANBAN (1-1,5 hari)
+Tugas:
+- Tiga kolom + counter.
+- Drag & drop SortableJS + PATCH status.
+- Optimistic update + rollback + fallback select.
+Selesai jika:
+- Status persist setelah refresh, counter benar, error handling jalan.
+
+FASE 7 - REKOMENDASI (1 hari)
+Tugas:
+- TaskRecommendationService + enum Priority.
+- Tampilkan badge + alasan di dashboard/daftar/kanban.
+- Unit test lengkap.
+Selesai jika:
+- Semua kasus uji lulus, alasan jelas, done dikecualikan.
+
+FASE 8 - NOTIFIKASI (0,5-1 hari)
+Tugas:
+- Halaman notifikasi + kelompok + badge navbar.
+- Empty state.
+- Test batas hari.
+Selesai jika:
+- Data sesuai, hanya milik user, update mengikuti deadline/status.
+
+FASE 9 - KALENDER + AGENDA (1,5-2 hari)
+Tugas:
+- Grid bulanan Carbon, navigasi bulan.
+- Deadline task otomatis + agenda manual terpisah.
+- Modal CRUD agenda.
+- Visual legend + mobile detail.
+Selesai jika:
+- Deadline berubah/hapus langsung tercermin; agenda tidak menduplikasi task.
+
+FASE 10 - POLISH UI/UX (1-1,5 hari)
+Tugas:
+- Responsif semua halaman.
+- Empty/loading/error states.
+- Aksesibilitas dasar.
+- Konsistensi badge, tombol, spacing.
+- Cek bundle build.
+Selesai jika:
+- Nyaman di 375px dan desktop, tidak ada overflow/regresi.
+
+FASE 11 - TESTING MENYELURUH + BUGFIX (1-1,5 hari)
+Tugas:
+- Jalankan semua feature + unit test.
+- Manual QA checklist.
+- Perbaiki bug kritis.
+- Pint.
+Selesai jika:
+- Test suite hijau, tidak ada bug blocking.
+
+FASE 12 - DEMO + DOKUMENTASI + DEPLOY (1 hari)
+Tugas:
+- README setup + akun demo.
+- Seeder data presentasi.
+- Build production, deploy.
+- Latihan demo 5-10 menit.
+Selesai jika:
+- Orang lain bisa menjalankan proyek dari README; demo lancar.
+
+Total: sekitar 12-15 hari kerja efektif + buffer.
+
+PEMBAGIAN TIM (CONTOH UNTUK 3 ORANG)
+- Anggota A (Backend/Auth): setup, migration/model, auth, policy, dashboard,
+  deployment.
+- Anggota B (Task/UX): courses, tasks CRUD, search/filter, Kanban, komponen UI.
+- Anggota C (Kalender/Logika): recommendation service, notifications,
+  calendar, agendas, unit test.
+- Semua: review PR, feature test, manual QA, dokumentasi.
+Aturan: satu file utama dimiliki satu orang pada satu waktu untuk mengurangi
+konflik merge. Diskusikan kontrak data (nama field/route) sebelum mulai.
+
+DEFINITION OF DONE TIAP FITUR
+1. Ada route + controller + Form Request + Policy.
+2. Validasi server berjalan.
+3. Data user lain tidak bisa diakses.
+4. UI responsif dan punya empty/error state.
+5. Ada test minimal untuk happy path + akses terlarang.
+6. Lolos Pint dan test suite.
+7. Bisa didemokan tanpa error console.
+
+
+================================================================================
+16. TESTING
+================================================================================
+
+16.1. JENIS TEST
+
+- Unit test: TaskRecommendationService, helper tanggal, scope filter.
+- Feature test: route, validasi, otorisasi, CRUD, filter, kanban, kalender,
+  notifikasi.
+- Manual test: tampilan responsif, keyboard, drag & drop, modal.
+
+Tidak perlu browser automation (Dusk/Playwright) untuk versi ini, kecuali
+waktu mencukupi. Manual checklist sudah memadai.
+
+16.2. PERSIAPAN
+
+- Gunakan RefreshDatabase di feature test.
+- Buat factory dengan state.
+- Gunakan actingAs($user) untuk request terautentikasi.
+- Gunakan Carbon::setTestNow() untuk deadline.
+- Test memakai SQLite in-memory (default phpunit.xml Laravel) agar cepat,
+  tetapi kode tetap kompatibel MySQL.
+
+16.3. DAFTAR TEST WAJIB
+
+AUTH
+[ ] guest ke /dashboard -> redirect login
+[ ] register valid -> user dibuat + login
+[ ] register email duplikat -> error
+[ ] login valid -> dashboard
+[ ] login salah -> error, tidak bocor detail
+[ ] logout -> session invalid
+
+ISOLASI
+[ ] user A tidak melihat task B di index
+[ ] user A tidak bisa show/edit/update/delete task B
+[ ] user A tidak bisa mengubah status task B
+[ ] user A tidak bisa mengubah/menghapus course B
+[ ] user A tidak bisa mengubah/menghapus agenda B
+[ ] user A tidak bisa memakai course B saat membuat task
+[ ] kalender dan notifikasi hanya data A
+
+CRUD TASK
+[ ] create valid -> tersimpan dengan user_id A
+[ ] create tanpa title -> 422
+[ ] create deadline invalid -> 422
+[ ] create course_id user lain -> 422
+[ ] update valid -> berubah
+[ ] delete -> hilang
+[ ] status default todo
+
+SEARCH/FILTER
+[ ] q judul, q deskripsi
+[ ] filter course, status, difficulty
+[ ] rentang deadline inklusif
+[ ] kombinasi filter
+[ ] reset filter
+[ ] pagination dengan query
+
+KANBAN
+[ ] status update valid -> 200 + database berubah
+[ ] status invalid -> 422
+[ ] status task user lain -> 403/404
+[ ] tugas done tidak muncul di rekomendasi/notifikasi
+
+REKOMENDASI
+[ ] semua kasus di bagian 11.9
+
+NOTIFIKASI
+[ ] overdue, hari ini, 1-3, 4-7
+[ ] batas 7/8 hari
+[ ] done dikecualikan
+[ ] urutan deadline
+[ ] isolasi user
+
+KALENDER
+[ ] deadline tampil di tanggal benar
+[ ] task di luar bulan tidak tampil
+[ ] ubah deadline -> pindah tanggal, tidak duplikat
+[ ] hapus task -> hilang dari kalender
+[ ] agenda manual terpisah
+[ ] month invalid -> fallback
+[ ] isolasi user
+
+UI MANUAL
+[ ] 375px: tidak overflow, menu bisa dibuka
+[ ] tablet & desktop rapi
+[ ] semua form punya label + error
+[ ] modal bisa ditutup Esc/backdrop
+[ ] tombol disable saat submit
+[ ] keyboard bisa mengakses navigasi/form
+[ ] flash message terlihat
+[ ] empty state muncul
+
+16.4. COMMAND
+
+    php artisan test
+    php artisan test --filter=Task
+    ./vendor/bin/pint --test
+    npm run build
+    php artisan route:list
+
+Target minimal: seluruh test hijau. Jangan mengejar coverage angka, kejar
+skenario penting.
+
+
+================================================================================
+17. GIT DAN KOLABORASI
+================================================================================
+
+17.1. PENTING: FOLDER INDUK ADALAH GIT REPO
+
+~/Documents/Kelompok_Sigma sudah memiliki .git. Jika proyek ini dikumpulkan
+di repo tersebut:
+- Jangan menjalankan `git init` lagi di dalam project_task_manager.
+- Commit dari root repo Kelompok_Sigma, atau
+- Jika ingin repo terpisah, pindahkan folder keluar dari repo induk agar
+  tidak menjadi nested repository.
+
+Laravel memiliki .gitignore sendiri, tetapi pastikan dari root repo:
+- vendor/, node_modules/, .env, database/*.sqlite, public/build tidak
+  ikut ter-commit (kecuali build sengaja di-commit untuk hosting tanpa Node).
+- file .env.example tetap di-commit.
+
+17.2. BRANCH
+
+- main: selalu stabil dan bisa didemokan.
+- feat/auth-layout
+- feat/courses-tasks
+- feat/kanban
+- feat/recommendation-notifications
+- feat/calendar-agenda
+- fix/nama-bug
+
+Aturan:
+- Satu fitur satu branch, satu PR.
+- Jangan commit langsung ke main.
+- Rebase/merge main sebelum PR terakhir.
+- Minimal satu orang me-review PR.
+- Ukuran PR wajar; jangan mencampur refactor besar dengan fitur.
+
+17.3. COMMIT MESSAGE
+
+Gunakan format singkat:
+    feat: tambah CRUD mata kuliah
+    feat: tampilkan rekomendasi prioritas di dashboard
+    fix: perbaiki isolasi data pada filter course
+    test: tambah test kalender dan agenda
+    docs: perbarui README setup
+    style: rapikan badge dan spacing
+
+17.4. AGAR TIDAK BENTROK
+
+- Sepakati nama route, field database, dan nama komponen di awal.
+- Satu migration = satu file, jangan edit migration orang lain.
+- Komponen UI dibuat lebih awal oleh satu orang, lalu dipakai bersama.
+- Jika mengubah layout global, beri tahu tim.
+- Jangan menyimpan credential di kode.
+- Setiap pull: composer install, npm install, migrate, test.
+- Sinkronisasi DB: gunakan migration + seeder, jangan ekspor .sql manual
+  sebagai satu-satunya sumber.
+
+17.5. README PROYEK
+
+Wajib berisi:
+- Deskripsi singkat + fitur.
+- Tech stack + versi minimum.
+- Cara install (composer, npm, .env, database, migrate, seed).
+- Akun demo.
+- Cara menjalankan test.
+- Struktur folder singkat.
+- Catatan deployment.
+- Screenshot (opsional, bagus untuk laporan).
+
+
+================================================================================
+18. DEPLOYMENT DAN OPERASIONAL
+================================================================================
+
+18.1. CHECKLIST SEBELUM DEPLOY
+
+[ ] APP_ENV=production
+[ ] APP_DEBUG=false
+[ ] APP_URL benar (https)
+[ ] APP_TIMEZONE=Asia/Jakarta
+[ ] Kredensial DB produksi benar
+[ ] .env tidak dapat diakses dari browser
+[ ] Document root mengarah ke folder public/, bukan root proyek
+[ ] Migration sudah diuji di salinan database
+[ ] Seeder produksi tidak membuat password lemah (atau tidak dijalankan)
+[ ] HTTPS aktif
+[ ] Backup database sebelum migrate
+[ ] Asset build sudah dibuat (public/build)
+[ ] storage/ dan bootstrap/cache/ writable
+[ ] Test login/register/task/kanban/kalender di server
+
+18.2. COMMAND DEPLOY
+
+    composer install --no-dev --optimize-autoloader
+    npm ci
+    npm run build
+    php artisan migrate --force
+    php artisan optimize
+    php artisan storage:link   # hanya jika ada upload; proyek ini belum perlu
+
+Jika tidak ada Node di server:
+- Jalankan npm ci && npm run build di lokal/CI.
+- Upload folder public/build bersama kode.
+- Jalankan composer install --no-dev di server.
+
+18.3. SHARED HOSTING
+
+- Arahkan domain/subdomain ke public/.
+- Jika tidak bisa mengubah document root, gunakan .htaccess redirect ke
+  public/ atau pindahkan isi public ke public_html dan sesuaikan path.
+- Pastikan .env berada di luar public.
+- Jangan mengandalkan SSH jika tidak tersedia; siapkan build asset lokal.
+- Matikan debug dan tampilkan halaman error umum.
+
+18.4. SETELAH DEPLOY
+
+- Cek halaman login, register, logout.
+- Buat akun baru, buat course/task, ubah status, cek kalender/notifikasi.
+- Cek data user lain tidak terlihat (buat 2 akun uji).
+- Cek responsif di ponsel.
+- Cek error log: storage/logs/laravel.log.
+- Siapkan backup rutin database.
+- Jangan meninggalkan akun demo dengan password lemah di produksi publik.
+
+18.5. ROLLBACK SEDERHANA
+
+- Simpan rilis sebelumnya + backup database.
+- Jika migrate bermasalah, restore backup.
+- Jangan menjalankan migrate:fresh di produksi.
+- Untuk perubahan kecil, rollback commit + deploy ulang.
+
+
+================================================================================
+19. RISIKO DAN MITIGASI
+================================================================================
+
+| Risiko | Dampak | Mitigasi |
+|--------|--------|----------|
+| Scope creep (fitur tambahan) | Tidak selesai | Patuhi daftar fitur; catat ide di backlog |
+| Konflik merge | Waktu habis | Branch per fitur, kontrak awal, PR kecil |
+| Data bocor antar user | Nilai keamanan jelek | Selalu query dari relasi user + Policy + test isolasi |
+| Status tidak sinkron | Kanban/dashboard beda | Satu kolom status, query langsung, test |
+| Deadline ganda di kalender | Data kacau | Jangan simpan deadline di agendas |
+| Timezone salah | Deadline bergeser | APP_TIMEZONE Asia/Jakarta, konsisten Carbon |
+| Drag & drop gagal request | UI bohong | Optimistic + rollback + toast |
+| Filter bentrok | Hasil aneh | Validasi query, test kombinasi, reset |
+| N+1 query | Lambat | with('course'), withCount, pagination |
+| UI berat | Tidak nyaman | Tanpa SPA/bootstrap admin, bundle kecil |
+| Demo data kedaluwarsa | Presentasi tidak relevan | Seeder relatif sekarang(), bukan tanggal mati |
+| Nested git repo | Commit membingungkan | Commit dari root atau pindahkan proyek |
+| Lupa .env.example | Tim tidak bisa setup | Perbarui setiap tambah env baru |
+| Test hanya happy path | Bug lolos | Tambah test akses terlarang + batas tanggal |
+
+
+================================================================================
+20. CHECKLIST AKHIR SEBELUM DIKUMPULKAN
+================================================================================
+
+FUNGSIONAL
+[ ] Register, login, logout berjalan.
+[ ] Tidak ada role admin.
+[ ] CRUD course berjalan; unik per user.
+[ ] CRUD task berjalan dengan semua field.
+[ ] Task hanya memakai course milik user.
+[ ] Kanban 3 kolom + drag & drop + fallback.
+[ ] Status kanban tersinkron ke dashboard/daftar/notifikasi.
+[ ] Search judul/deskripsi berjalan.
+[ ] Filter course/status/difficulty/rentang deadline bisa digabung.
+[ ] Reset filter berjalan.
+[ ] Rekomendasi deterministik + label + alasan.
+[ ] Rekomendasi tidak mengubah data/urutan otomatis.
+[ ] Notifikasi deadline berkelompok dan akurat.
+[ ] Kalender bulanan + navigasi bulan.
+[ ] Deadline task muncul otomatis di kalender.
+[ ] Agenda manual CRUD dan terpisah dari task.
+[ ] Perubahan deadline/hapus task langsung tercermin di kalender.
+
+KEAMANAN & DATA
+[ ] Guest diarahkan ke login.
+[ ] Semua query data dibatasi user login.
+[ ] Policy pada show/edit/update/delete/status.
+[ ] course_id divalidasi kepemilikannya.
+[ ] Tidak menerima user_id dari form.
+[ ] CSRF pada form dan fetch.
+[ ] Validasi server untuk semua input.
+[ ] .env tidak ter-commit.
+[ ] APP_DEBUG=false di produksi.
+
+UI/UX
+[ ] Responsif 375px, 768px, 1280px.
+[ ] Tidak ada overflow horizontal.
+[ ] Empty/loading/error state.
+[ ] Flash sukses/gagal.
+[ ] Konfirmasi hapus.
+[ ] Label form + error inline.
+[ ] Modal bisa ditutup Esc/backdrop.
+[ ] Kontras dan fokus keyboard layak.
+[ ] Warna status/prioritas konsisten + ada teks.
+[ ] Legend kalender jelas.
+
+KUALITAS KODE
+[ ] Pint lulus.
+[ ] Test suite hijau.
+[ ] Tidak ada N+1 pada halaman daftar.
+[ ] Tidak ada console error.
+[ ] Struktur controller/service/policy rapi.
+[ ] README lengkap + akun demo.
+[ ] Seeder demo berjalan dari nol.
+[ ] Build produksi sukses.
+[ ] Demo 5-10 menit sudah dilatih.
+
+
+================================================================================
+LAMPIRAN A - SPESIFIKASI ASLI (ACUAN)
+================================================================================
+
+# Spesifikasi Fitur Web Task & Note Manager
+
+## 1. Dashboard
+
+### 1.1. Authentication
+Buat sistem autentikasi pengguna yang mencakup registrasi, login, dan logout.
+Aplikasi tidak menggunakan sistem role Admin karena seluruh pengguna memiliki
+hak akses sebagai user. Setiap pengguna hanya dapat melihat, membuat,
+mengubah, dan menghapus data miliknya sendiri. Pastikan semua akses data
+dilindungi dengan autentikasi dan otorisasi yang sesuai.
+
+### 1.2. Manajemen Tugas (Task Management)
+Buat fitur CRUD (Create, Read, Update, Delete) untuk mengelola tugas. Setiap
+tugas memiliki judul, deskripsi, mata kuliah, deadline, tingkat kesulitan,
+dan status pengerjaan. Pengguna dapat menambahkan, mengubah, melihat detail,
+serta menghapus tugas. Pengguna juga dapat membuat dan mengelola daftar mata
+kuliah sendiri, kemudian menghubungkannya dengan tugas yang relevan.
+
+### 1.3. Status Tugas dan Kanban Board
+Sediakan tampilan Kanban Board untuk memvisualisasikan progres tugas
+berdasarkan status, seperti To Do, In Progress, dan Done. Pengguna dapat
+memindahkan tugas antarstatus dengan mudah. Status pada Kanban Board harus
+tersinkronisasi dengan data tugas sehingga perubahan status langsung
+tercermin pada tampilan lain di aplikasi.
+
+### 1.4. Rekomendasi Pengerjaan Tugas
+Buat fitur rekomendasi pengerjaan tugas menggunakan logika berbasis aturan,
+tanpa AI atau model machine learning. Rekomendasi mempertimbangkan tingkat
+kesulitan dan sisa waktu menuju deadline. Sistem memberikan label atau
+indikator seperti prioritas tinggi, sedang, dan rendah, disertai alasan yang
+mudah dipahami. Contohnya, tugas yang sulit dan memiliki deadline dekat dapat
+ditandai sebagai tugas yang perlu mendapat perhatian lebih. Fitur ini hanya
+memberikan rekomendasi, bukan menentukan urutan pengerjaan secara otomatis.
+
+### 1.5. Pencarian dan Filter Tugas
+Sediakan search bar untuk mencari tugas berdasarkan judul atau kata kunci.
+Tambahkan filter berdasarkan mata kuliah, status pengerjaan, tingkat
+kesulitan, dan rentang deadline. Pengguna dapat menggabungkan beberapa filter
+sekaligus dan menghapus filter untuk kembali melihat seluruh tugas miliknya.
+
+### 1.6. Notifikasi Deadline
+Buat halaman atau panel notifikasi yang menampilkan daftar tugas berdasarkan
+kedekatan deadline, termasuk tugas yang akan segera jatuh tempo dan tugas yang
+sudah terlambat. Informasi yang ditampilkan mencakup judul tugas, mata kuliah,
+tanggal deadline, dan status pengerjaan. Notifikasi harus diperbarui
+berdasarkan data tugas terbaru dan tidak menampilkan tugas milik pengguna lain.
+
+## 2. Kalender
+
+### 2.1. Kalender Visual dan Agenda
+Buat kalender berbentuk kotak-kotak dengan tampilan bulanan sebagai tampilan
+utama. Pengguna dapat berpindah antarbulan dan memilih tanggal tertentu untuk
+menambahkan, melihat, mengubah, atau menghapus agenda berupa teks, rencana
+kegiatan, maupun rencana pengerjaan tugas. Agenda yang dibuat pengguna harus
+dapat dibedakan secara visual dari deadline tugas otomatis.
+
+### 2.2. Integrasi Deadline Tugas
+Integrasikan kalender dengan data tugas. Setiap tugas yang memiliki deadline
+otomatis ditampilkan pada tanggal yang sesuai tanpa perlu dimasukkan kembali
+secara manual. Informasi deadline ditampilkan menggunakan indikator visual dan
+dapat diklik untuk membuka detail tugas. Apabila deadline tugas diubah atau
+tugas dihapus, tampilan kalender harus ikut diperbarui secara otomatis.
+
+## 3. Ketentuan Umum Pengembangan
+
+- Gunakan Laravel sebagai framework utama aplikasi.
+- Gunakan database relasional untuk menyimpan akun, tugas, mata kuliah, dan
+  agenda kalender.
+- Terapkan validasi pada seluruh input pengguna.
+- Pastikan data setiap pengguna terisolasi dan tidak dapat diakses oleh
+  pengguna lain.
+- Gunakan antarmuka yang responsif untuk desktop maupun perangkat mobile.
+- Hindari fitur berbasis AI terlebih dahulu. Rekomendasi tugas menggunakan
+  logika deterministik yang dapat dijelaskan dan diuji.
+- Jaga konsistensi data antara dashboard, Kanban Board, notifikasi, dan
+  kalender.
+- Pisahkan agenda kalender yang dibuat manual dari deadline yang berasal dari
+  tugas agar tidak terjadi duplikasi data.
+- Prioritaskan fungsionalitas inti, kemudahan penggunaan, keamanan, dan
+  struktur kode yang mudah dikembangkan sebelum menambahkan fitur lanjutan.
+
+
+================================================================================
+LAMPIRAN B - CHEAT SHEET COMMAND
+================================================================================
+
+Setup awal (folder berisi instruksi.txt):
+    cd ~/Documents/Kelompok_Sigma
+    composer create-project laravel/laravel project_task_manager_tmp
+    rsync -a project_task_manager_tmp/ project_task_manager/
+    rm -rf project_task_manager_tmp
+    cd project_task_manager
+    cp .env.example .env
+    php artisan key:generate
+    composer require laravel/breeze --dev
+    php artisan breeze:install blade
+    npm install
+    npm install sortablejs
+    php artisan migrate
+    php artisan db:seed
+    npm run dev
+    php artisan serve
+
+Generator:
+    php artisan make:model Course -mf
+    php artisan make:model Task -mf
+    php artisan make:model Agenda -mf
+    php artisan make:controller TaskController --resource
+    php artisan make:policy TaskPolicy --model=Task
+    php artisan make:request StoreTaskRequest
+    php artisan make:enum TaskStatus
+    php artisan make:enum Difficulty
+    php artisan make:test TaskRecommendationTest
+    php artisan make:seeder DemoSeeder
+
+Database:
+    php artisan migrate
+    php artisan migrate:fresh --seed
+    php artisan db:seed --class=DemoSeeder
+    php artisan tinker
+
+Frontend:
+    npm install
+    npm run dev
+    npm run build
+
+Testing & kualitas:
+    php artisan test
+    php artisan test --filter=Task
+    ./vendor/bin/pint
+    ./vendor/bin/pint --test
+    php artisan route:list
+
+Produksi:
+    composer install --no-dev --optimize-autoloader
+    npm ci && npm run build
+    php artisan migrate --force
+    php artisan optimize
+    php artisan config:clear
+    php artisan route:clear
+    php artisan view:clear
+
+Jika error setelah ubah .env:
+    php artisan config:clear
+    php artisan cache:clear
+    php artisan optimize:clear
+
+Jika asset tidak muncul:
+    npm run build
+    php artisan view:clear
+    cek public/build/manifest.json
+
+Jika test gagal karena DB:
+    cek phpunit.xml (DB_CONNECTION=sqlite, DB_DATABASE=:memory:)
+    php artisan config:clear
+
+
+================================================================================
+LAMPIRAN C - REKOMENDASI RINGKAS UNTUK PRESENTASI
+================================================================================
+
+Stack yang dipakai:
+- Laravel 13 + PHP 8.4
+- MariaDB 11.4 / MySQL 8
+- Blade + Tailwind CSS 4 + Alpine.js
+- SortableJS untuk Kanban
+- PHPUnit + Laravel Pint
+- Vite + Node 24
+
+Alasan memilih:
+1. Sesuai ketentuan Laravel dan database relasional.
+2. Server-rendered + Tailwind membuat UI ringan dan cepat.
+3. Breeze menyediakan autentikasi aman tanpa membangun dari nol.
+4. Alpine + SortableJS cukup untuk interaksi tanpa SPA framework.
+5. Kalender dibuat custom dengan Carbon, tanpa library berat.
+6. Rekomendasi deterministik mudah dijelaskan, diuji, dan dipresentasikan.
+7. Tidak butuh Redis, queue, WebSocket, atau layanan AI.
+8. Mudah di-deploy ke VPS/shared hosting biasa.
+
+Fitur yang ditonjolkan saat demo:
+- Isolasi data dua akun.
+- Drag & drop Kanban yang tersinkron.
+- Rekomendasi + alasan yang bisa dijelaskan.
+- Filter kombinasi + reset.
+- Notifikasi deadline berkelompok.
+- Deadline otomatis di kalender, terpisah dari agenda manual.
+- Tampilan responsif di ponsel.
+
+================================================================================
+SELESAI - Mulai dari Fase 0, jangan lompat ke UI sebelum database dan auth stabil.
+================================================================================
