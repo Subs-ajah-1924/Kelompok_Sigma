@@ -2,29 +2,41 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreAgendaRequest;
+use App\Http\Requests\UpdateAgendaRequest;
+use App\Models\Agenda;
+use Illuminate\Http\RedirectResponse;
+
 class AgendaController extends Controller
 {
-    /**
-     * Store a newly created agenda.
-     */
-    public function store(): never
+    public function store(StoreAgendaRequest $request): RedirectResponse
     {
-        abort(501, 'Fitur tambah agenda belum diimplementasikan.');
+        $agenda = auth()->user()->agendas()->create($request->validated());
+
+        $month = $agenda->date->format('Y-m');
+
+        return redirect()->route('calendar.index', ['month' => $month])->with('success', 'Agenda berhasil ditambahkan.');
     }
 
-    /**
-     * Update the specified agenda.
-     */
-    public function update(string $agenda): never
+    public function update(UpdateAgendaRequest $request, Agenda $agenda): RedirectResponse
     {
-        abort(501, "Fitur ubah agenda #{$agenda} belum diimplementasikan.");
+        $this->authorize('update', $agenda);
+
+        $agenda->update($request->validated());
+
+        $month = $agenda->date->format('Y-m');
+
+        return redirect()->route('calendar.index', ['month' => $month])->with('success', 'Agenda berhasil diperbarui.');
     }
 
-    /**
-     * Remove the specified agenda.
-     */
-    public function destroy(string $agenda): never
+    public function destroy(Agenda $agenda): RedirectResponse
     {
-        abort(501, "Fitur hapus agenda #{$agenda} belum diimplementasikan.");
+        $this->authorize('delete', $agenda);
+
+        $month = $agenda->date->format('Y-m');
+
+        $agenda->delete();
+
+        return redirect()->route('calendar.index', ['month' => $month])->with('success', 'Agenda berhasil dihapus.');
     }
 }

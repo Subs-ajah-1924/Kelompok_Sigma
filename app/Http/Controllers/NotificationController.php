@@ -6,14 +6,22 @@ use Illuminate\View\View;
 
 class NotificationController extends Controller
 {
-    /**
-     * Display the deadline notifications.
-     */
     public function index(): View
     {
-        return $this->placeholder(
-            'Notifikasi Deadline',
-            'Daftar tugas yang mendekati deadline dan yang sudah terlambat akan diimplementasikan setelah model tugas tersedia.',
-        );
+        $now = now();
+
+        $tasks = auth()->user()->tasks()
+            ->with('course')
+            ->where('status', '!=', 'done')
+            ->where('deadline', '<=', $now->copy()->addDays(7)->endOfDay())
+            ->orderBy('deadline')
+            ->get();
+
+        $overdue = $tasks->filter(fn ($t) => $t->deadline->lt($now->copy()->startOfDay()));
+        $today = $tasks->filter(fn ($t) => $t->deadline->between($now->copy()->startOfDay(), $now->copy()->endOfDay()));
+        $soon = $tasks->filter(fn ($t) => $t->deadline->gt($now->copy()->endOfDay()) && $t->deadline->lte($now->copy()->addDays(3)->endOfDay()));
+        $upcoming = $tasks->filter(fn ($t) => $t->deadline->gt($now->copy()->addDays(3)->endOfDay()) && $t->deadline->lte($now->copy()->addDays(7)->endOfDay()));
+
+        return view('notifications.index', compact('overdue', 'today', 'soon', 'upcoming'));
     }
 }

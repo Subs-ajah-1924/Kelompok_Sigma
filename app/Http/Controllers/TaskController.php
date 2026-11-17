@@ -2,83 +2,159 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreTaskRequest;
+use App\Http\Requests\UpdateTaskRequest;
+use App\Http\Requests\UpdateTaskStatusRequest;
+use App\Models\Task;
+use App\Services\TaskRecommendationService;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class TaskController extends Controller
 {
-    /**
-     * Display a listing of tasks.
-     */
     public function index(): View
     {
-        return $this->placeholder(
-            'Daftar Tugas',
-            'Halaman daftar tugas, pencarian, dan filter akan diimplementasikan setelah model dan migration tersedia.',
-        );
+        $filters = request()->only(['q', 'course_id', 'status', 'difficulty', 'deadline_from', 'deadline_to', 'sort']);
+
+        $query = auth()->user()->tasks()->with('course');
+
+        // Search
+        if (! empty($filters['q'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->where('title', 'like', '%'.$filters['q'].'%')
+                    ->orWhere('description', 'like', '%'.$filters['q'].'%');
+            });
+        }
+
+        // Filters
+        if (! empty($filters['course_id'])) {
+            $query->where('course_id', $filters['course_id']);
+        }
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+        if (! empty($filters['difficulty'])) {
+            $query->where('difficulty', $filters['difficulty']);
+        }
+        if (! empty($filters['deadline_from'])) {
+            $query->where('deadline', '>=', Carbon::parse($filters['deadline_from'])->startOfDay());
+        }
+        if (! empty($filters['deadline_to'])) {
+            $query->where('deadline', '<=', Carbon::parse($filters['deadline_to'])->endOfDay());
+        }
+
+        // Sort
+        $sort = $filters['sort'] ?? 'deadline';
+        match ($sort) {
+            'title' => $query->orderBy('title'),
+            'created_at' => $query->latest(),
+            default => $query->orderBy('deadline'),
+        };
+
+        $tasks = $query->paginate(12)->withQueryString();
+
+        $courses = auth()->user()->courses()->get();
+
+        return view('tasks.index', compact('tasks', 'courses', 'filters'));
     }
 
-    /**
-     * Show the form for creating a task.
-     */
     public function create(): View
     {
-        return $this->placeholder(
-            'Tambah Tugas',
-            'Form tambah tugas akan diimplementasikan setelah model mata kuliah dan tugas tersedia.',
-        );
+        $courses = auth()->user()->courses()->get();
+
+        return view('tasks.create', compact('courses'));
     }
 
-    /**
-     * Store a newly created task.
-     */
-    public function store(): never
+    public function store(StoreTaskRequest $request): RedirectResponse
     {
-        abort(501, 'Fitur tambah tugas belum diimplementasikan.');
+        $data = $request->validated();
+        $data['user_id'] = auth()->id();
+        if (empty($data['status'])) {
+            $data['status'] = 'todo';
+        }
+        if (($data['status'] ?? null) === 'done') {
+            $data['completed_at'] = now();
+        }
+
+        $task = auth()->user()->tasks()->create($data);
+
+        return redirect()->route('tasks.show', $task)->with('success', 'Tugas berhasil ditambahkan.');
     }
 
-    /**
-     * Display the specified task.
-     */
-    public function show(string $task): View
+    public function show(Task $task): View
     {
-        return $this->placeholder(
-            'Detail Tugas',
-            "Halaman detail untuk tugas #{$task} akan diimplementasikan setelah model tugas tersedia.",
-        );
+        $this->authorize('view', $task);
+
+        $task->load('course');
+
+        $recommendation = (new TaskRecommendationService)->recommend($task);
+
+        return view('tasks.show', compact('task', 'recommendation'));
     }
 
-    /**
-     * Show the form for editing a task.
-     */
-    public function edit(string $task): View
+    public function edit(Task $task): View
     {
-        return $this->placeholder(
-            'Ubah Tugas',
-            "Form ubah tugas #{$task} akan diimplementasikan setelah model tugas tersedia.",
-        );
+        $this->authorize('update', $task);
+
+        $courses = auth()->user()->courses()->get();
+
+        return view('tasks.edit', compact('task', 'courses'));
     }
 
-    /**
-     * Update the specified task.
-     */
-    public function update(string $task): never
+    public function update(UpdateTaskRequest $request, Task $task): RedirectResponse
     {
-        abort(501, "Fitur ubah tugas #{$task} belum diimplementasikan.");
+        $this->authorize('update', $task);
+
+        $data = $request->validated();
+
+        // Handle completed_at
+        if (isset($data['status'])) {
+            if ($data['status'] === 'done' && $task->status->value !== 'done') {
+                $data['completed_at'] = now();
+            } elseif ($data['status'] !== 'done') {
+                $data['completed_at'] = null;
+            }
+        }
+
+        $task->update($data);
+
+        return redirect()->route('tasks.show', $task)->with('success', 'Tugas berhasil diperbarui.');
     }
 
-    /**
-     * Remove the specified task.
-     */
-    public function destroy(string $task): never
+    public function destroy(Task $task): RedirectResponse
     {
-        abort(501, "Fitur hapus tugas #{$task} belum diimplementasikan.");
+        $this->authorize('delete', $task);
+
+        $task->delete();
+
+        return redirect()->route('tasks.index')->with('success', 'Tugas berhasil dihapus.');
     }
 
-    /**
-     * Update the status of the specified task from the Kanban board.
-     */
-    public function updateStatus(string $task): never
+    public function updateStatus(UpdateTaskStatusRequest $request, Task $task): JsonResponse|RedirectResponse
     {
-        abort(501, "Fitur ubah status tugas #{$task} belum diimplementasikan.");
+        $this->authorize('update', $task);
+
+        $newStatus = $request->validated()['status'];
+
+        $data = ['status' => $newStatus];
+
+        if ($newStatus === 'done') {
+            $data['completed_at'] = now();
+        } else {
+            $data['completed_at'] = null;
+        }
+
+        $task->update($data);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => $task->status->value,
+                'label' => $task->status->label(),
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Status tugas berhasil diperbarui.');
     }
 }

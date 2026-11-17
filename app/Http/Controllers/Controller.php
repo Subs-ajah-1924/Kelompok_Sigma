@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\View\View;
 
 abstract class Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Render a temporary page for a controller that is not implemented yet.
      */

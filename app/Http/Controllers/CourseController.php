@@ -2,64 +2,55 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCourseRequest;
+use App\Http\Requests\UpdateCourseRequest;
+use App\Models\Course;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class CourseController extends Controller
 {
-    /**
-     * Display a listing of courses.
-     */
     public function index(): View
     {
-        return $this->placeholder(
-            'Mata Kuliah',
-            'Halaman daftar mata kuliah akan diimplementasikan setelah model dan migration tersedia.',
-        );
+        $courses = auth()->user()->courses()->withCount('tasks')->latest()->get();
+
+        return view('courses.index', compact('courses'));
     }
 
-    /**
-     * Show the form for creating a course.
-     */
     public function create(): View
     {
-        return $this->placeholder(
-            'Tambah Mata Kuliah',
-            'Form tambah mata kuliah akan diimplementasikan setelah model mata kuliah tersedia.',
-        );
+        return view('courses.create');
     }
 
-    /**
-     * Store a newly created course.
-     */
-    public function store(): never
+    public function store(StoreCourseRequest $request): RedirectResponse
     {
-        abort(501, 'Fitur tambah mata kuliah belum diimplementasikan.');
+        auth()->user()->courses()->create($request->validated());
+
+        return redirect()->route('courses.index')->with('success', 'Mata kuliah berhasil ditambahkan.');
     }
 
-    /**
-     * Show the form for editing a course.
-     */
-    public function edit(string $course): View
+    public function edit(Course $course): View
     {
-        return $this->placeholder(
-            'Ubah Mata Kuliah',
-            "Form ubah mata kuliah #{$course} akan diimplementasikan setelah model mata kuliah tersedia.",
-        );
+        $this->authorize('update', $course);
+
+        return view('courses.edit', compact('course'));
     }
 
-    /**
-     * Update the specified course.
-     */
-    public function update(string $course): never
+    public function update(UpdateCourseRequest $request, Course $course): RedirectResponse
     {
-        abort(501, "Fitur ubah mata kuliah #{$course} belum diimplementasikan.");
+        $this->authorize('update', $course);
+
+        $course->update($request->validated());
+
+        return redirect()->route('courses.index')->with('success', 'Mata kuliah berhasil diperbarui.');
     }
 
-    /**
-     * Remove the specified course.
-     */
-    public function destroy(string $course): never
+    public function destroy(Course $course): RedirectResponse
     {
-        abort(501, "Fitur hapus mata kuliah #{$course} belum diimplementasikan.");
+        $this->authorize('delete', $course);
+
+        $course->delete();
+
+        return redirect()->route('courses.index')->with('success', 'Mata kuliah berhasil dihapus.');
     }
 }

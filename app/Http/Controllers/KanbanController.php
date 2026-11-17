@@ -2,18 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\TaskRecommendationService;
 use Illuminate\View\View;
 
 class KanbanController extends Controller
 {
-    /**
-     * Display the Kanban board.
-     */
     public function index(): View
     {
-        return $this->placeholder(
-            'Kanban Board',
-            'Papan Kanban To Do, In Progress, dan Done akan diimplementasikan setelah model tugas tersedia.',
-        );
+        $tasks = auth()->user()->tasks()->with('course')->get();
+
+        $columns = [
+            'todo' => $tasks->where('status.value', 'todo')->values(),
+            'in_progress' => $tasks->where('status.value', 'in_progress')->values(),
+            'done' => $tasks->where('status.value', 'done')->values(),
+        ];
+
+        $recommendationService = new TaskRecommendationService;
+
+        return view('kanban.index', compact('columns', 'recommendationService'));
     }
 }
