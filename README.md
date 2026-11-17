@@ -1,30 +1,35 @@
-# Sigma Task Manager
+# TasKuy
 
-Aplikasi web untuk mengelola tugas, mata kuliah, dan agenda kalender mahasiswa.
-Proyek ini menggunakan Laravel dan database relasional, dengan fokus pada
-isolasi data antar pengguna, tampilan responsif, dan UI yang ringan.
+Aplikasi web untuk mahasiswa mengelola tugas, mata kuliah, dan agenda kalender.
+Proyek Kelompok Sigma, sebelumnya bernama Sigma Task Manager.
 
-## Status Saat Ini
+Fokusnya: isolasi data antar pengguna, tampilan responsif, dan UI yang ringan.
+Dibangun dengan Laravel dan database relasional.
 
-Tahap setup awal selesai:
+> **Status saat ini:** setup awal selesai. Fitur aplikasi (tugas, kanban,
+> rekomendasi, notifikasi, kalender) **belum diimplementasikan**.
+> Rencana lengkapnya ada di `instruksi.txt`.
 
-- Laravel 13.38
-- PHP 8.4
-- Laravel Breeze 2.4 (stack Blade) untuk autentikasi
-- Blade + Tailwind CSS + Alpine.js
-- Vite 8
-- SortableJS (dependency Kanban, belum diimplementasikan)
-- SQLite sebagai database pengembangan default
-- PHPUnit 12 + Laravel Pint
+## Tech Stack
 
-Fitur aplikasi (tugas, kanban, rekomendasi, notifikasi, kalender) belum
-diimplementasikan. Rencana lengkap ada di `instruksi.txt`.
+| Lapisan | Teknologi |
+| --- | --- |
+| Framework | Laravel 12 |
+| Bahasa | PHP ^8.2 |
+| Autentikasi | Laravel Breeze 2.3 (stack Blade) |
+| Tampilan | Blade + Tailwind CSS + Alpine.js |
+| Build tool | Vite 8 |
+| Kanban | SortableJS (dependency sudah ada, belum diimplementasikan) |
+| Database (dev) | SQLite |
+| Testing & format | PHPUnit 11 + Laravel Pint |
+
+Versi di atas mengikuti `composer.json` dan `package.json`, bukan perkiraan.
 
 ## Kebutuhan
 
-- PHP 8.3+ (disarankan 8.4)
+- PHP 8.2+
 - Composer 2
-- Node.js 20+ (disarankan 24)
+- Node.js 20+
 - npm
 
 ## Setup Cepat
@@ -48,11 +53,11 @@ Buka http://localhost:8000.
 `composer setup` melakukan:
 
 1. `composer install`
-2. menyalin `.env.example` ke `.env` jika belum ada
-3. generate application key
-4. membuat `database/database.sqlite` jika belum ada
-5. menjalankan migration
-6. install dependency npm dan build asset
+2. Menyalin `.env.example` ke `.env` jika belum ada
+3. Generate application key
+4. Membuat `database/database.sqlite` jika belum ada
+5. Menjalankan migration
+6. Install dependency npm dan build asset
 
 Akun demo setelah `php artisan db:seed`:
 
@@ -79,8 +84,8 @@ Untuk development frontend, gunakan `npm run dev` di terminal terpisah.
 
 ## Database
 
-Default proyek memakai **SQLite** agar setiap contributor GitHub bisa
-menjalankan aplikasi tanpa kredensial server database bersama.
+Default proyek memakai **SQLite** agar setiap contributor bisa menjalankan
+aplikasi tanpa kredensial database bersama.
 
 - Database lokal ada di `database/database.sqlite`.
 - File tersebut **tidak di-commit** ke Git.
@@ -113,8 +118,20 @@ php artisan migrate
 ```
 
 Catatan: database server bersama untuk semua contributor tidak disarankan
-untuk pengembangan karena kredensial dan data bisa bentrok. Yang dibagikan
+untuk pengembangan, karena kredensial dan data bisa bentrok. Yang dibagikan
 lewat GitHub adalah struktur database (migration) dan data awal (seeder).
+
+## Status Implementasi
+
+| Bagian | Status |
+| --- | --- |
+| Setup Laravel + Breeze | Selesai |
+| Route (`routes/web.php`) | Sudah disiapkan |
+| Controller tugas, matkul, Kanban, kalender | Placeholder, `store()` masih abort 501 |
+| Model dan migration `courses`, `tasks`, `agendas` | Belum ada, baru model `User` |
+| Fitur tugas, Kanban, rekomendasi, notifikasi, kalender | Belum diimplementasikan |
+
+Detail rencananya ada di `instruksi.txt` bagian 5 (database) dan 9 (fitur).
 
 ## Testing
 
