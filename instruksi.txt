@@ -1,5 +1,5 @@
 ================================================================================
-INSTRUKSI PROYEK: WEB TASK & NOTE MANAGER
+INSTRUKSI PROYEK: Taskuy
 Folder kerja : ~/Documents/Kelompok_Sigma/project_task_manager
 Tim          : Kelompok Sigma
 Versi        : 1.0
