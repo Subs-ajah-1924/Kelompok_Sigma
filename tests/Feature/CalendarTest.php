@@ -11,8 +11,8 @@ class CalendarTest extends TestCase
      */
     public function test_example(): void
     {
-        $response = $this->get('/');
+        $response = $this->get(route('dashboard'));
 
-        $response->assertStatus(200);
+        $response->assertRedirect(route('login'));
     }
 }
