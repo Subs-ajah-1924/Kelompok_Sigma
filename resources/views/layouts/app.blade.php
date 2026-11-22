@@ -17,6 +17,8 @@
                 try {
                     if (localStorage.getItem('theme') === 'dark') {
                         document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
                     }
                 } catch (e) {}
             })();
@@ -199,22 +201,25 @@
                                 @endif
                             </button>
 
-                            <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-96 bg-surface-container-lowest rounded-2xl shadow-xl border border-surface-container-high z-50 p-5" style="display:none;">
-                                <h3 class="font-title-lg text-title-lg text-on-surface mb-4">Tugas Baru</h3>
-                                <div class="flex flex-col gap-3">
-                                    @php $newTasks = auth()->user()->tasks()->where('status', '!=', 'done')->where('is_read', false)->latest()->limit(5)->get(); @endphp
+                            <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-80 bg-surface-container-lowest rounded-2xl shadow-xl border border-surface-container-high z-50 p-4 max-h-[380px] overflow-y-auto" style="display:none;">
+                                <h3 class="font-title-lg text-title-lg text-on-surface mb-3">Tugas Baru</h3>
+                                <div class="flex flex-col gap-2.5">
+                                    @php $newTasks = auth()->user()->tasks()->with('course')->where('status', '!=', 'done')->where('is_read', false)->latest()->limit(5)->get(); @endphp
                                     @forelse ($newTasks as $task)
-                                        <a href="{{ route('tasks.markAsRead', $task) }}" class="block p-4 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors">
-                                            <p class="font-body-md text-body-md text-on-surface leading-snug">
+                                        <a href="{{ route('tasks.markAsRead', $task) }}" class="block p-3 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors">
+                                            <p class="font-body-sm text-body-sm text-on-surface leading-snug">
                                                 <span class="font-bold text-primary">Ada Tugas Baru!</span><br>
                                                 Cek Sekarang: {{ $task->title }}
+                                                @if($task->course && $task->course->name)
+                                                    <span class="block text-xs text-outline font-medium mt-0.5">Mata Kuliah: {{ $task->course->name }}</span>
+                                                @endif
                                             </p>
                                         </a>
                                     @empty
                                         <p class="text-sm text-on-surface-variant p-2">Tidak ada tugas baru.</p>
                                     @endforelse
                                 </div>
-                                <div class="mt-4 pt-3 border-t border-surface-container-high">
+                                <div class="mt-3 pt-2.5 border-t border-surface-container-high">
                                     <a href="{{ route('notifications.index') }}" class="block text-left text-sm text-primary font-semibold hover:underline">Lihat Semua</a>
                                 </div>
                             </div>
@@ -289,19 +294,24 @@
             }
             function updateThemeButtons() {
                 const dark = document.documentElement.classList.contains('dark');
-                document.querySelectorAll('.theme-btn-light').forEach(b => {
+                const lightBtn = document.querySelectorAll('.theme-btn-light');
+                const darkBtn = document.querySelectorAll('.theme-btn-dark');
+
+                lightBtn.forEach(b => {
                     b.classList.toggle('bg-surface-container-lowest', !dark);
                     b.classList.toggle('text-on-surface', !dark);
                     b.classList.toggle('shadow-xs', !dark);
                     b.classList.toggle('text-outline-variant', dark);
                 });
-                document.querySelectorAll('.theme-btn-dark').forEach(b => {
+                darkBtn.forEach(b => {
                     b.classList.toggle('bg-surface-container-lowest', dark);
                     b.classList.toggle('text-on-surface', dark);
                     b.classList.toggle('shadow-xs', dark);
                     b.classList.toggle('text-outline-variant', !dark);
                 });
             }
+            // Run immediately to prevent flash
+            updateThemeButtons();
             document.addEventListener('DOMContentLoaded', updateThemeButtons);
         </script>
     </body>
