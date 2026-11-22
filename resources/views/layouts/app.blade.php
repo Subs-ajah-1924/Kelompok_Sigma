@@ -228,17 +228,37 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3 pl-2 border-l border-surface-container-high dark:border-slate-700">
-                            @if (Auth::user()->avatar)
-                                <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
-                            @else
-                                <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary">
-                                    <span class="material-symbols-outlined text-[18px]">person</span>
+                        <div x-data="{ profileOpen: false }" class="relative pl-2 border-l border-surface-container-high dark:border-slate-700">
+                            <button @click="profileOpen = !profileOpen" class="flex items-center gap-3 cursor-pointer focus:outline-none" aria-label="Profil Menu">
+                                @if (Auth::user()->avatar)
+                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
+                                @else
+                                    <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary">
+                                        <span class="material-symbols-outlined text-[18px]">person</span>
+                                    </div>
+                                @endif
+                                <div class="flex flex-col text-left">
+                                    <span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">{{ Auth::user()->name }}</span>
+                                    <span class="font-label-sm text-label-sm text-tertiary dark:text-emerald-400 font-medium">Mahasiswa Aktif</span>
                                 </div>
-                            @endif
-                            <div class="flex flex-col text-left">
-                                <span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">{{ Auth::user()->name }}</span>
-                                <span class="font-label-sm text-label-sm text-tertiary dark:text-emerald-400 font-medium">Mahasiswa Aktif</span>
+                            </button>
+
+                            <div x-show="profileOpen" @click.away="profileOpen = false" class="absolute right-0 mt-2 w-56 bg-surface-container-lowest rounded-2xl shadow-xl border border-surface-container-high z-50 p-3 flex flex-col gap-1" style="display:none;">
+                                <div class="px-3 py-2 border-b border-surface-container-high mb-1">
+                                    <span class="block font-label-md text-label-md font-bold text-on-surface truncate">{{ Auth::user()->name }}</span>
+                                    <span class="block font-label-sm text-label-sm text-tertiary dark:text-emerald-400 font-medium">Mahasiswa Aktif</span>
+                                </div>
+                                <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all">
+                                    <span class="material-symbols-outlined text-[18px]">person</span>
+                                    <span>Profil</span>
+                                </a>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl font-label-md text-label-md text-error hover:bg-error-container/20 transition-all text-left">
+                                        <span class="material-symbols-outlined text-[18px]">logout</span>
+                                        <span>Keluar</span>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>
