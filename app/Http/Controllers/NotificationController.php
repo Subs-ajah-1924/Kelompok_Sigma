@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class NotificationController extends Controller
@@ -25,7 +26,7 @@ class NotificationController extends Controller
         return view('notifications.index', compact('overdue', 'today', 'soon', 'upcoming', 'later'));
     }
 
-    public function markGroupDone(string $group): \Illuminate\Http\RedirectResponse
+    public function markGroupDone(string $group): RedirectResponse
     {
         $now = now();
         $query = auth()->user()->tasks()->where('status', '!=', 'done');

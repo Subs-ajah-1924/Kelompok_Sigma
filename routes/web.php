@@ -7,8 +7,9 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KanbanController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ThemeController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskReadController;
+use App\Http\Controllers\ThemeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -21,6 +22,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('tasks', TaskController::class);
     Route::patch('tasks/{task}/status', [TaskController::class, 'updateStatus'])
         ->name('tasks.status');
+    Route::get('tasks/{task}/read', TaskReadController::class)->name('tasks.markAsRead');
 
     Route::resource('courses', CourseController::class)->except(['show']);
 

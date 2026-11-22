@@ -54,8 +54,8 @@
             <aside class="fixed left-0 top-0 h-full w-[240px] bg-inverse-surface dark:bg-[#0a0c16] text-inverse-on-surface dark:text-slate-200 z-50 flex flex-col justify-between overflow-y-auto px-4 py-5 border-r border-outline-variant dark:border-slate-800">
                 <div class="flex flex-col gap-5">
                     <div class="flex items-center gap-3 px-2">
-                        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-secondary-container to-primary-container flex items-center justify-center text-on-primary shadow-sm">
-                            <span class="material-symbols-outlined text-[20px]">check</span>
+                        <div class="w-9 h-9 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
+                            <img src="{{ asset('images/logo.webp') }}" alt="TasKuy Logo" class="w-full h-full object-cover">
                         </div>
                         <div class="flex flex-col">
                             <span class="font-headline-sm text-headline-sm tracking-tight font-bold">TasKuy</span>
@@ -86,7 +86,7 @@
                                     <span>{{ $item['label'] }}</span>
                                 </div>
                                 @if ($item['route'] === 'notifications.index')
-                                    @php $badge = auth()->user()->tasks()->where('status', '!=', 'done')->count(); @endphp
+                                    @php $badge = auth()->user()->tasks()->where('status', '!=', 'done')->where('is_read', false)->count(); @endphp
                                     @if ($badge > 0)
                                         <span class="px-2 py-0.5 rounded-full bg-error text-on-error font-label-sm text-label-sm font-semibold">{{ $badge > 9 ? '9+' : $badge }}</span>
                                     @endif
@@ -150,7 +150,7 @@
                 <a href="{{ route('dashboard') }}" class="font-headline-sm text-headline-sm font-bold text-primary">TasKuy</a>
                 <a href="{{ route('notifications.index') }}" class="relative p-2 text-on-surface-variant" aria-label="Notifikasi">
                     <span class="material-symbols-outlined text-[24px]">notifications</span>
-                    @php $notifCount = auth()->user()->tasks()->where('status', '!=', 'done')->where('deadline', '<=', now()->endOfDay())->count(); @endphp
+                    @php $notifCount = auth()->user()->tasks()->where('status', '!=', 'done')->where('is_read', false)->count(); @endphp
                     @if ($notifCount > 0)
                         <span class="absolute top-1 right-1 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-on-error bg-error rounded-full">{{ $notifCount > 9 ? '9+' : $notifCount }}</span>
                     @endif
@@ -193,7 +193,7 @@
                         <div x-data="{ open: false }" class="relative">
                             <button @click="open = !open" class="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-slate-800 hover:text-on-surface transition-colors" aria-label="Notifikasi">
                                 <span class="material-symbols-outlined text-[20px]">notifications</span>
-                                @php $hc = auth()->user()->tasks()->where('status', '!=', 'done')->count(); @endphp
+                                @php $hc = auth()->user()->tasks()->where('status', '!=', 'done')->where('is_read', false)->count(); @endphp
                                 @if ($hc > 0)
                                     <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-error"></span>
                                 @endif
@@ -202,9 +202,9 @@
                             <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-96 bg-surface-container-lowest rounded-2xl shadow-xl border border-surface-container-high z-50 p-5" style="display:none;">
                                 <h3 class="font-title-lg text-title-lg text-on-surface mb-4">Tugas Baru</h3>
                                 <div class="flex flex-col gap-3">
-                                    @php $newTasks = auth()->user()->tasks()->where('status', '!=', 'done')->latest()->limit(5)->get(); @endphp
+                                    @php $newTasks = auth()->user()->tasks()->where('status', '!=', 'done')->where('is_read', false)->latest()->limit(5)->get(); @endphp
                                     @forelse ($newTasks as $task)
-                                        <a href="{{ route('tasks.show', $task) }}" class="block p-4 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors">
+                                        <a href="{{ route('tasks.markAsRead', $task) }}" class="block p-4 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors">
                                             <p class="font-body-md text-body-md text-on-surface leading-snug">
                                                 <span class="font-bold text-primary">Ada Tugas Baru!</span><br>
                                                 Cek Sekarang: {{ $task->title }}
