@@ -190,15 +190,28 @@
                         </a>
                     </div>
                     <div class="flex items-center gap-4">
-                        <a href="{{ route('notifications.index') }}" class="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-slate-800 hover:text-on-surface transition-colors" aria-label="Notifikasi">
-                            <span class="material-symbols-outlined text-[20px]">notifications</span>
-                            @if ($notifCount ?? false)
-                            @endif
-                            @php $hc = auth()->user()->tasks()->where('status', '!=', 'done')->where('deadline', '<=', now()->endOfDay())->count(); @endphp
-                            @if ($hc > 0)
-                                <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-error"></span>
-                            @endif
-                        </a>
+                        <div x-data="{ open: false }" class="relative">
+                            <button @click="open = !open" class="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-slate-800 hover:text-on-surface transition-colors" aria-label="Notifikasi">
+                                <span class="material-symbols-outlined text-[20px]">notifications</span>
+                                @php $hc = auth()->user()->tasks()->where('status', '!=', 'done')->count(); @endphp
+                                @if ($hc > 0)
+                                    <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-error"></span>
+                                @endif
+                            </button>
+
+                            <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-80 bg-surface-container-lowest rounded-2xl shadow-lg border border-surface-container-high z-50 p-4" style="display:none;">
+                                <h3 class="font-title-md text-title-md text-on-surface mb-3">Tugas Baru</h3>
+                                @php $newTasks = auth()->user()->tasks()->where('status', '!=', 'done')->latest()->limit(3)->get(); @endphp
+                                @forelse ($newTasks as $task)
+                                    <a href="{{ route('tasks.show', $task) }}" class="block p-3 mb-2 rounded-xl hover:bg-surface-container-low transition-colors">
+                                        <p class="font-label-md text-label-md text-on-surface">Ada Tugas Baru! Cek Sekarang: {{ $task->title }}</p>
+                                    </a>
+                                @empty
+                                    <p class="text-sm text-on-surface-variant">Tidak ada tugas baru.</p>
+                                @endforelse
+                                <a href="{{ route('notifications.index') }}" class="block text-center mt-2 text-sm text-primary font-semibold hover:underline">Lihat Semua</a>
+                            </div>
+                        </div>
                         <div class="flex items-center gap-3 pl-2 border-l border-surface-container-high dark:border-slate-700">
                             <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary">
                                 <span class="material-symbols-outlined text-[18px]">person</span>
