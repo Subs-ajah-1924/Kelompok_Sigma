@@ -191,10 +191,6 @@
                             <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">search</span>
                             <input name="q" value="{{ request('q') }}" class="w-full h-10 pl-9 pr-4 rounded-xl bg-surface-container-low dark:bg-slate-800 text-on-surface placeholder:text-outline font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-primary-container transition-all border border-transparent focus:border-primary-container" placeholder="Cari tugas..." type="text">
                         </form>
-                        <a href="{{ route('tasks.create') }}" class="flex items-center gap-2 h-10 px-4 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg font-medium shadow-sm transition-all">
-                            <span class="material-symbols-outlined text-[18px]">add</span>
-                            <span>Buat Tugas</span>
-                        </a>
                     </div>
                     <div class="flex items-center gap-4">
                         <div x-data="{ open: false }" class="relative">
