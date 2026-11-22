@@ -199,17 +199,24 @@
                                 @endif
                             </button>
 
-                            <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-80 bg-surface-container-lowest rounded-2xl shadow-lg border border-surface-container-high z-50 p-4" style="display:none;">
-                                <h3 class="font-title-md text-title-md text-on-surface mb-3">Tugas Baru</h3>
-                                @php $newTasks = auth()->user()->tasks()->where('status', '!=', 'done')->latest()->limit(3)->get(); @endphp
-                                @forelse ($newTasks as $task)
-                                    <a href="{{ route('tasks.show', $task) }}" class="block p-3 mb-2 rounded-xl hover:bg-surface-container-low transition-colors">
-                                        <p class="font-label-md text-label-md text-on-surface">Ada Tugas Baru! Cek Sekarang: {{ $task->title }}</p>
-                                    </a>
-                                @empty
-                                    <p class="text-sm text-on-surface-variant">Tidak ada tugas baru.</p>
-                                @endforelse
-                                <a href="{{ route('notifications.index') }}" class="block text-center mt-2 text-sm text-primary font-semibold hover:underline">Lihat Semua</a>
+                            <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-96 bg-surface-container-lowest rounded-2xl shadow-xl border border-surface-container-high z-50 p-5" style="display:none;">
+                                <h3 class="font-title-lg text-title-lg text-on-surface mb-4">Tugas Baru</h3>
+                                <div class="flex flex-col gap-3">
+                                    @php $newTasks = auth()->user()->tasks()->where('status', '!=', 'done')->latest()->limit(5)->get(); @endphp
+                                    @forelse ($newTasks as $task)
+                                        <a href="{{ route('tasks.show', $task) }}" class="block p-4 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors">
+                                            <p class="font-body-md text-body-md text-on-surface leading-snug">
+                                                <span class="font-bold text-primary">Ada Tugas Baru!</span><br>
+                                                Cek Sekarang: {{ $task->title }}
+                                            </p>
+                                        </a>
+                                    @empty
+                                        <p class="text-sm text-on-surface-variant p-2">Tidak ada tugas baru.</p>
+                                    @endforelse
+                                </div>
+                                <div class="mt-4 pt-3 border-t border-surface-container-high">
+                                    <a href="{{ route('notifications.index') }}" class="block text-left text-sm text-primary font-semibold hover:underline">Lihat Semua</a>
+                                </div>
                             </div>
                         </div>
                         <div class="flex items-center gap-3 pl-2 border-l border-surface-container-high dark:border-slate-700">
