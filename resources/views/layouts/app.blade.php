@@ -245,22 +245,31 @@
                                 </div>
                             </button>
 
-                            <div x-show="profileOpen" @click.away="profileOpen = false" class="absolute right-0 mt-2 w-56 bg-surface-container-lowest rounded-2xl shadow-xl border border-surface-container-high z-50 p-3 flex flex-col gap-1" style="display:none;">
-                                <div class="px-3 py-2 border-b border-surface-container-high mb-1">
-                                    <span class="block font-label-md text-label-md font-bold text-on-surface truncate">{{ Auth::user()->name }}</span>
-                                    <span class="block font-label-sm text-label-sm text-tertiary dark:text-emerald-400 font-medium">Mahasiswa Aktif</span>
+                            <div x-show="profileOpen" @click.away="profileOpen = false" class="absolute right-0 mt-2 w-64 bg-surface-container-lowest rounded-2xl shadow-xl border border-surface-container-high z-50 p-4 flex flex-col items-center text-center gap-2" style="display:none;">
+                                <div class="flex flex-col items-center border-b border-surface-container-high pb-3 w-full">
+                                    @if (Auth::user()->avatar)
+                                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar" class="w-14 h-14 rounded-full object-cover mb-2 shadow-sm border-2 border-primary/20">
+                                    @else
+                                        <div class="w-14 h-14 rounded-full bg-primary-container flex items-center justify-center text-on-primary mb-2 shadow-sm">
+                                            <span class="material-symbols-outlined text-[28px]">person</span>
+                                        </div>
+                                    @endif
+                                    <span class="font-title-md text-title-md font-bold text-on-surface w-full break-words">{{ Auth::user()->name }}</span>
+                                    <span class="font-label-sm text-label-sm text-tertiary dark:text-emerald-400 font-medium">Mahasiswa Aktif</span>
                                 </div>
-                                <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all">
-                                    <span class="material-symbols-outlined text-[18px]">person</span>
-                                    <span>Profil</span>
-                                </a>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl font-label-md text-label-md text-error hover:bg-error-container/20 transition-all text-left">
-                                        <span class="material-symbols-outlined text-[18px]">logout</span>
-                                        <span>Keluar</span>
-                                    </button>
-                                </form>
+                                <div class="flex flex-col gap-1 w-full text-left">
+                                    <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all">
+                                        <span class="material-symbols-outlined text-[18px]">person</span>
+                                        <span>Profil</span>
+                                    </a>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl font-label-md text-label-md text-error hover:bg-error-container/20 transition-all text-left">
+                                            <span class="material-symbols-outlined text-[18px]">logout</span>
+                                            <span>Keluar</span>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
