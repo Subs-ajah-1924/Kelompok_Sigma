@@ -117,11 +117,14 @@
                     </nav>
 
                     <div class="pt-2">
-                        <p class="px-3 font-label-sm text-label-sm text-outline-variant dark:text-slate-500 font-semibold tracking-wider uppercase mb-2">Workspace Views</p>
+                        <p class="px-3 font-label-sm text-label-sm text-outline-variant dark:text-slate-500 font-semibold tracking-wider uppercase mb-2">TOOLS</p>
                         <nav class="flex flex-col gap-1">
-                            <a href="{{ route('tasks.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl font-label-lg text-label-lg text-outline-variant dark:text-slate-400 hover:bg-surface-container-highest/10 dark:hover:bg-slate-800/60 hover:text-inverse-on-surface dark:hover:text-slate-100 transition-all">
-                                <span class="material-symbols-outlined text-[20px]">format_list_bulleted</span>
-                                <span>Semua Tugas</span>
+                            @php
+                                $statActive = request()->routeIs('statistics.index');
+                            @endphp
+                            <a href="{{ route('statistics.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-label-lg text-label-lg transition-all {{ $statActive ? 'bg-primary-container text-on-primary font-semibold shadow-sm' : 'text-outline-variant dark:text-slate-400 hover:bg-surface-container-highest/10 dark:hover:bg-slate-800/60 hover:text-inverse-on-surface dark:hover:text-slate-100' }}">
+                                <span class="material-symbols-outlined text-[20px]">bar_chart</span>
+                                <span>Statistik</span>
                             </a>
                         </nav>
                     </div>
