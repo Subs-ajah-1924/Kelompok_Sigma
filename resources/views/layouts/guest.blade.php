@@ -9,16 +9,29 @@
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="preload" as="font" type="font/ttf" crossorigin href="https://fonts.gstatic.com/s/materialsymbolsoutlined/v385/kJF1BvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oDMzByHX9rA6RzaxHMPdY43zj-jCxv3fzvRNU22ZXGJpEpjC_1v-p_4MrImHCIJIZrDCvHOem.ttf">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
 
         <script>
             (function () {
+                var dark = false;
                 try {
-                    if (localStorage.getItem('theme') === 'dark') {
-                        document.documentElement.classList.add('dark');
-                    }
+                    dark = localStorage.getItem('theme') === 'dark';
                 } catch (e) {}
+                document.documentElement.classList.toggle('dark', dark);
+                document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+                function markFontsLoaded() {
+                    document.documentElement.classList.add('fonts-loaded');
+                }
+                if (document.fonts && typeof document.fonts.check === 'function' && document.fonts.check('24px "Material Symbols Outlined"')) {
+                    markFontsLoaded();
+                } else if (document.fonts && typeof document.fonts.ready !== 'undefined') {
+                    document.fonts.ready.then(markFontsLoaded);
+                    setTimeout(markFontsLoaded, 3000);
+                } else {
+                    markFontsLoaded();
+                }
             })();
         </script>
 

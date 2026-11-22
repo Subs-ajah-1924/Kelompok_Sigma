@@ -7,20 +7,42 @@
 
         <title>{{ config('app.name', 'TasKuy') }}</title>
 
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
-
         <script>
             (function () {
+                var dark = false;
                 try {
-                    if (localStorage.getItem('theme') === 'dark') {
-                        document.documentElement.classList.add('dark');
-                    }
+                    dark = localStorage.getItem('theme') === 'dark';
                 } catch (e) {}
+                document.documentElement.classList.toggle('dark', dark);
+                document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+                function markFontsLoaded() {
+                    document.documentElement.classList.add('fonts-loaded');
+                }
+                if (document.fonts && typeof document.fonts.check === 'function' && document.fonts.check('24px "Material Symbols Outlined"')) {
+                    markFontsLoaded();
+                } else if (document.fonts && typeof document.fonts.ready !== 'undefined') {
+                    document.fonts.ready.then(markFontsLoaded);
+                    setTimeout(markFontsLoaded, 3000);
+                } else {
+                    markFontsLoaded();
+                }
             })();
+
+            function setTheme(mode) {
+                var dark = mode === 'dark';
+                document.documentElement.classList.toggle('dark', dark);
+                document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+                try {
+                    localStorage.setItem('theme', dark ? 'dark' : 'light');
+                } catch (e) {}
+            }
         </script>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="preload" as="font" type="font/ttf" crossorigin href="https://fonts.gstatic.com/s/materialsymbolsoutlined/v385/kJF1BvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oDMzByHX9rA6RzaxHMPdY43zj-jCxv3fzvRNU22ZXGJpEpjC_1v-p_4MrImHCIJIZrDCvHOem.ttf">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
@@ -109,11 +131,11 @@
                 <div class="flex flex-col gap-3 pt-6">
                     <!-- Theme toggle -->
                     <div class="flex items-center justify-between p-1 rounded-xl bg-surface-container-highest/10 dark:bg-slate-800/60">
-                        <button type="button" onclick="setTheme('light')" class="theme-btn-light flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg font-label-sm text-label-sm font-semibold transition-colors">
+                        <button type="button" onclick="setTheme('light')" class="theme-btn-light flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg font-label-sm text-label-sm font-semibold transition-colors bg-surface-container-lowest text-on-surface shadow-xs dark:bg-transparent dark:text-outline-variant dark:shadow-none">
                             <span class="material-symbols-outlined text-[16px]">light_mode</span>
                             <span>Light</span>
                         </button>
-                        <button type="button" onclick="setTheme('dark')" class="theme-btn-dark flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg font-label-sm text-label-sm font-medium transition-colors">
+                        <button type="button" onclick="setTheme('dark')" class="theme-btn-dark flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg font-label-sm text-label-sm font-semibold transition-colors text-outline-variant dark:bg-surface-container-lowest dark:text-on-surface dark:shadow-xs">
                             <span class="material-symbols-outlined text-[16px]">dark_mode</span>
                             <span>Dark</span>
                         </button>
@@ -204,15 +226,18 @@
                                 <div class="flex flex-col gap-2.5">
                                     @php $newTasks = auth()->user()->tasks()->with('course')->where('status', '!=', 'done')->where('is_read', false)->latest()->limit(5)->get(); @endphp
                                     @forelse ($newTasks as $task)
-                                        <a href="{{ route('tasks.markAsRead', $task) }}" class="block p-3 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors">
-                                            <p class="font-body-sm text-body-sm text-on-surface leading-snug">
-                                                <span class="font-bold text-primary">Ada Tugas Baru!</span><br>
-                                                Cek Sekarang: {{ $task->title }}
-                                                @if($task->course && $task->course->name)
-                                                    <span class="block text-xs text-outline font-medium mt-0.5">Mata Kuliah: {{ $task->course->name }}</span>
-                                                @endif
-                                            </p>
-                                        </a>
+                                        <form method="POST" action="{{ route('tasks.markAsRead', $task) }}" class="block">
+                                            @csrf
+                                            <button type="submit" class="w-full text-left block p-3 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors">
+                                                <p class="font-body-sm text-body-sm text-on-surface leading-snug">
+                                                    <span class="font-bold text-primary">Ada Tugas Baru!</span><br>
+                                                    Cek Sekarang: {{ $task->title }}
+                                                    @if($task->course && $task->course->name)
+                                                        <span class="block text-xs text-outline font-medium mt-0.5">Mata Kuliah: {{ $task->course->name }}</span>
+                                                    @endif
+                                                </p>
+                                            </button>
+                                        </form>
                                     @empty
                                         <p class="text-sm text-on-surface-variant p-2">Tidak ada tugas baru.</p>
                                     @endforelse
@@ -278,34 +303,5 @@
             </main>
         </div>
         @endauth
-
-        <script>
-            function setTheme(mode) {
-                if (mode === 'dark') {
-                    document.documentElement.classList.add('dark');
-                    try { localStorage.setItem('theme', 'dark'); } catch (e) {}
-                } else {
-                    document.documentElement.classList.remove('dark');
-                    try { localStorage.setItem('theme', 'light'); } catch (e) {}
-                }
-                updateThemeButtons();
-            }
-            function updateThemeButtons() {
-                const dark = document.documentElement.classList.contains('dark');
-                document.querySelectorAll('.theme-btn-light').forEach(b => {
-                    b.classList.toggle('bg-surface-container-lowest', !dark);
-                    b.classList.toggle('text-on-surface', !dark);
-                    b.classList.toggle('shadow-xs', !dark);
-                    b.classList.toggle('text-outline-variant', dark);
-                });
-                document.querySelectorAll('.theme-btn-dark').forEach(b => {
-                    b.classList.toggle('bg-surface-container-lowest', dark);
-                    b.classList.toggle('text-on-surface', dark);
-                    b.classList.toggle('shadow-xs', dark);
-                    b.classList.toggle('text-outline-variant', !dark);
-                });
-            }
-            document.addEventListener('DOMContentLoaded', updateThemeButtons);
-        </script>
     </body>
 </html>

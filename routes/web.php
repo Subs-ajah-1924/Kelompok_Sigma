@@ -22,7 +22,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('tasks', TaskController::class);
     Route::patch('tasks/{task}/status', [TaskController::class, 'updateStatus'])
         ->name('tasks.status');
-    Route::get('tasks/{task}/read', TaskReadController::class)->name('tasks.markAsRead');
+    Route::post('tasks/{task}/read', TaskReadController::class)->name('tasks.markAsRead');
 
     Route::resource('courses', CourseController::class)->except(['show']);
 

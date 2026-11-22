@@ -20,7 +20,7 @@ class DashboardController extends Controller
         $upcomingTasks = $user->tasks()
             ->with('course')
             ->where('status', '!=', 'done')
-            ->where('deadline', '>=', now()->startOfDay())
+            ->where('deadline', '>=', now())
             ->where('deadline', '<=', now()->copy()->addDays(7)->endOfDay())
             ->orderBy('deadline')
             ->limit(5)

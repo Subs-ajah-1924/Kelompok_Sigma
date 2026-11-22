@@ -11,8 +11,11 @@ class CalendarController extends Controller
     {
         $monthParam = request('month');
         try {
-            $month = Carbon::createFromFormat('Y-m', $monthParam ?? now()->format('Y-m'))->startOfMonth();
-        } catch (\Exception $e) {
+            if (! is_scalar($monthParam)) {
+                throw new \InvalidArgumentException('Invalid month');
+            }
+            $month = Carbon::createFromFormat('!Y-m', $monthParam ?: now()->format('Y-m'))->startOfMonth();
+        } catch (\Throwable $e) {
             $month = now()->startOfMonth();
         }
 

@@ -17,8 +17,8 @@ class NotificationController extends Controller
             ->orderBy('deadline')
             ->get();
 
-        $overdue = $tasks->filter(fn ($t) => $t->deadline->lt($now));
-        $today = $tasks->filter(fn ($t) => $t->deadline->gte($now) && $t->deadline->lte($now->copy()->endOfDay()));
+        $overdue = $tasks->filter(fn ($t) => $t->deadline->lt($now->copy()->startOfDay()));
+        $today = $tasks->filter(fn ($t) => $t->deadline->between($now->copy()->startOfDay(), $now->copy()->endOfDay()));
         $soon = $tasks->filter(fn ($t) => $t->deadline->gt($now->copy()->endOfDay()) && $t->deadline->lte($now->copy()->addDays(3)->endOfDay()));
         $upcoming = $tasks->filter(fn ($t) => $t->deadline->gt($now->copy()->addDays(3)->endOfDay()) && $t->deadline->lte($now->copy()->addDays(7)->endOfDay()));
         $later = $tasks->filter(fn ($t) => $t->deadline->gt($now->copy()->addDays(7)->endOfDay()));
@@ -37,10 +37,14 @@ class NotificationController extends Controller
             'soon' => $query->where('deadline', '>', $now->copy()->endOfDay())->where('deadline', '<=', $now->copy()->addDays(3)->endOfDay()),
             'upcoming' => $query->where('deadline', '>', $now->copy()->addDays(3)->endOfDay())->where('deadline', '<=', $now->copy()->addDays(7)->endOfDay()),
             'later' => $query->where('deadline', '>', $now->copy()->addDays(7)->endOfDay()),
-            default => null,
+            default => abort(404),
         };
 
-        $query->update(['status' => 'done', 'completed_at' => now()]);
+        $affected = $query->update(['status' => 'done', 'completed_at' => now()]);
+
+        if ($affected === 0) {
+            return back()->with('success', 'Tidak ada tugas yang ditandai selesai.');
+        }
 
         return back()->with('success', 'Tugas berhasil ditandai selesai.');
     }

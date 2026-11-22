@@ -52,6 +52,7 @@ class TaskRecommendationService
         $difficultyPart = "Tingkat kesulitan {$difficultyLabel}.";
 
         $deadlinePart = match (true) {
+            $isOverdue && $days === 0 => 'Deadline sudah terlewat hari ini.',
             $isOverdue => 'Deadline sudah terlewat '.abs($days).' hari.',
             $days <= 1 => 'Deadline kurang dari 24 jam lagi.',
             $days <= 3 => "Deadline tinggal {$days} hari lagi.",

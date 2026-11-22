@@ -21,7 +21,7 @@ class TaskController extends Controller
         $query = auth()->user()->tasks()->with('course');
 
         // Search
-        if (! empty($filters['q']) && is_scalar($filters['q'])) {
+        if (isset($filters['q']) && is_scalar($filters['q']) && $filters['q'] !== '') {
             $query->where(function ($q) use ($filters) {
                 $q->where('title', 'like', '%'.$filters['q'].'%')
                     ->orWhere('description', 'like', '%'.$filters['q'].'%');
@@ -29,13 +29,13 @@ class TaskController extends Controller
         }
 
         // Filters
-        if (! empty($filters['course_id']) && is_scalar($filters['course_id'])) {
+        if (isset($filters['course_id']) && is_scalar($filters['course_id']) && $filters['course_id'] !== '') {
             $query->where('course_id', $filters['course_id']);
         }
-        if (! empty($filters['status']) && is_scalar($filters['status'])) {
+        if (isset($filters['status']) && is_scalar($filters['status']) && $filters['status'] !== '') {
             $query->where('status', $filters['status']);
         }
-        if (! empty($filters['difficulty']) && is_scalar($filters['difficulty'])) {
+        if (isset($filters['difficulty']) && is_scalar($filters['difficulty']) && $filters['difficulty'] !== '') {
             $query->where('difficulty', $filters['difficulty']);
         }
         if (! empty($filters['deadline_from'])) {
