@@ -140,14 +140,7 @@
                         </button>
                     </div>
 
-                    <div class="flex items-center gap-3 px-2 py-2">
-                        <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary">
-                            <span class="material-symbols-outlined text-[18px]">person</span>
-                        </div>
-                        <div class="flex flex-col min-w-0">
-                            <span class="font-label-md text-label-md font-semibold leading-tight truncate">{{ Auth::user()->name }}</span>
-                        </div>
-                    </div>
+
                     <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl font-label-lg text-label-lg text-outline-variant dark:text-slate-400 hover:bg-surface-container-highest/10 dark:hover:bg-slate-800/60 hover:text-inverse-on-surface dark:hover:text-slate-100 transition-all">
                         <span class="material-symbols-outlined text-[20px]">person</span>
                         <span>Profil</span>
