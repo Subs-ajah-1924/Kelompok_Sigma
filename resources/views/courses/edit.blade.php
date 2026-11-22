@@ -29,7 +29,24 @@
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-label-md text-label-md text-on-surface-variant font-medium">Jam Kuliah</label>
-                    <input type="text" name="time" value="{{ old('time', $course->time) }}" placeholder="Contoh: 08:00 - 10:30" class="h-11 px-4 rounded-lg bg-surface-container-low text-on-surface border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container font-body-md text-body-md placeholder:text-outline">
+                    <select name="time" class="h-11 px-4 rounded-lg bg-surface-container-low text-on-surface border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container font-body-md text-body-md">
+                        <option value="">Pilih Jam Kuliah</option>
+                        @foreach([
+                            '07:00 - 08:40',
+                            '08:00 - 09:40',
+                            '08:00 - 10:30',
+                            '09:00 - 10:40',
+                            '09:50 - 11:30',
+                            '10:40 - 12:20',
+                            '13:00 - 14:40',
+                            '13:00 - 15:30',
+                            '14:50 - 16:30',
+                            '15:40 - 17:20',
+                            '18:30 - 21:00'
+                        ] as $timeSlot)
+                            <option value="{{ $timeSlot }}" {{ old('time', $course->time) == $timeSlot ? 'selected' : '' }}>{{ $timeSlot }}</option>
+                        @endforeach
+                    </select>
                     @error('time') <p class="font-body-sm text-body-sm text-error">{{ $message }}</p> @enderror
                 </div>
             </div>
