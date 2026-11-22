@@ -32,6 +32,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/notifications', [NotificationController::class, 'index'])
         ->name('notifications.index');
+    Route::post('/notifications/{group}/done', [NotificationController::class, 'markGroupDone'])
+        ->name('notifications.markGroupDone');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
