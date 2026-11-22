@@ -202,12 +202,15 @@
                             <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-80 bg-surface-container-lowest rounded-2xl shadow-xl border border-surface-container-high z-50 p-4 max-h-[380px] overflow-y-auto" style="display:none;">
                                 <h3 class="font-title-lg text-title-lg text-on-surface mb-3">Tugas Baru</h3>
                                 <div class="flex flex-col gap-2.5">
-                                    @php $newTasks = auth()->user()->tasks()->where('status', '!=', 'done')->where('is_read', false)->latest()->limit(5)->get(); @endphp
+                                    @php $newTasks = auth()->user()->tasks()->with('course')->where('status', '!=', 'done')->where('is_read', false)->latest()->limit(5)->get(); @endphp
                                     @forelse ($newTasks as $task)
                                         <a href="{{ route('tasks.markAsRead', $task) }}" class="block p-3 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors">
                                             <p class="font-body-sm text-body-sm text-on-surface leading-snug">
                                                 <span class="font-bold text-primary">Ada Tugas Baru!</span><br>
                                                 Cek Sekarang: {{ $task->title }}
+                                                @if($task->course && $task->course->name)
+                                                    <span class="block text-xs text-outline font-medium mt-0.5">Mata Kuliah: {{ $task->course->name }}</span>
+                                                @endif
                                             </p>
                                         </a>
                                     @empty
