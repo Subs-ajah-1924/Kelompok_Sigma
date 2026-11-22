@@ -88,7 +88,7 @@ class TaskController extends Controller
 
         $task = auth()->user()->tasks()->create($data);
 
-        return redirect()->route('tasks.show', $task)->with('success', 'Tugas berhasil ditambahkan.');
+        return redirect()->route('tasks.index')->with('success', 'Tugas berhasil ditambahkan.');
     }
 
     public function show(Task $task): View

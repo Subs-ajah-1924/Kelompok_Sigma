@@ -14,10 +14,49 @@
         <!-- Greeting -->
         <div class="rounded-2xl bg-surface-container-lowest p-6 shadow-xs border border-surface-container-high flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div class="flex flex-col gap-1">
-                <h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight">Halo, {{ auth()->user()->name }}</h2>
-                <div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
-                    <span class="material-symbols-outlined text-[16px] text-outline">calendar_today</span>
-                    <span>{{ now()->translatedFormat('l, d F Y') }}</span>
+                <div class="flex items-center gap-2">
+                    <h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight">Halo, {{ auth()->user()->name }}</h2>
+                    <span class="text-2xl" role="img" aria-label="emoji">✨</span>
+                </div>
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[16px] text-outline">calendar_today</span>
+                        <span>{{ now()->translatedFormat('l, d F Y') }}</span>
+                    </div>
+                    <span class="hidden sm:inline text-outline">•</span>
+                    <span class="text-primary font-medium italic">"{{ [
+                        1 => 'Tetap semangat dan pantang menyerah hari ini! 💪',
+                        2 => 'Setiap langkah kecil membawamu lebih dekat ke kesuksesan. 🚀',
+                        3 => 'Fokus pada proses, hasil terbaik akan mengikuti. 🎯',
+                        4 => 'Jangan lupa istirahat sejenak di tengah kesibukanmu. ☕',
+                        5 => 'Hari ini adalah kesempatan baru untuk menjadi luar biasa! 🌟',
+                        6 => 'Kerja cerdas, tetap tenang, kamu pasti bisa menyelesaikannya. 💡',
+                        7 => 'Kesulitan hari ini adalah kekuatan untuk esok hari. 🔥',
+                        8 => 'Senyumanmu hari ini bisa mencerahkan dunia di sekitarmu! 😊',
+                        9 => 'Konsistensi adalah kunci dari segala pencapaian besar. 🗝️',
+                        10 => 'Hadapi tantangan hari ini dengan senyuman dan optimisme. 🌻',
+                        11 => 'Jangan takut gagal, karena itu bukti kamu sedang mencoba. 🌱',
+                        12 => 'Waktu terbaik untuk memulai adalah sekarang. Go! ⚡',
+                        13 => 'Jadikan hari ini penuh arti dan produktif! 📚',
+                        14 => 'Percayalah pada kemampuan dirimu sendiri. Kamu hebat! 🏆',
+                        15 => 'Nikmati setiap proses belajarmu hari ini. 🎨',
+                        16 => 'Energi positif akan menarik hal-hal baik kepadamu. ✨',
+                        17 => 'Tetap tenang dan selesaikan satu per satu tugasmu. 📝',
+                        18 => 'Hari baru, semangat baru, impian baru! 🌈',
+                        19 => 'Jangan menunda apa yang bisa dikerjakan hari ini. ⏳',
+                        20 => 'Kegigihan mengalahkan bakat ketika bakat tidak gigih. 🦁',
+                        21 => 'Buat dirimu bangga dengan usahamu hari ini. 🎖️',
+                        22 => 'Setiap rintangan adalah batu loncatan menuju sukses. 🧗',
+                        23 => 'Syukuri hal kecil hari ini, kebahagiaan akan mengikuti. 🍀',
+                        24 => 'Fokus pada tujuan akhir, abaikan gangguan kecil. 🎯',
+                        25 => 'Kamu lebih kuat dari yang kamu bayangkan. 🦅',
+                        26 => 'Jadilah versi terbaik dirimu hari ini! 👑',
+                        27 => 'Kesalahan adalah guru terbaik, jangan takut salah. 🧠',
+                        28 => 'Masa depan cerdas dibentuk dari kerja keras hari ini. 🔮',
+                        29 => 'Buka hatimu untuk belajar hal-hal baru hari ini. 📖',
+                        30 => 'Tarik napas dalam-dalam, kamu pasti bisa melalui ini. 🍃',
+                        31 => 'Akhiri hari ini dengan rasa syukur dan bangga. 🌙',
+    ][now()->day] }}"</span>
                 </div>
             </div>
             <div class="flex items-center gap-4 bg-surface-container-low/50 px-4 py-2.5 rounded-xl border border-surface-container-high">
