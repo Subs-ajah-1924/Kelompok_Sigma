@@ -71,9 +71,9 @@
                 --color-primary-container: {{ $themePrimaryContainer }};
             }
         </style>
-        <div x-data="{ sidebarOpen: false }" class="min-h-screen">
+        <div x-data="{ sidebarOpen: false, sidebarExpanded: true }" class="min-h-screen">
             <!-- Sidebar (desktop) -->
-            <aside class="fixed left-0 top-0 h-full w-[240px] bg-inverse-surface dark:bg-[#0a0c16] text-inverse-on-surface dark:text-slate-200 z-50 flex flex-col justify-between overflow-y-auto px-4 py-5 border-r border-outline-variant dark:border-slate-800">
+            <aside x-show="sidebarExpanded" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" class="fixed left-0 top-0 h-full w-[240px] bg-inverse-surface dark:bg-[#0a0c16] text-inverse-on-surface dark:text-slate-200 z-50 flex flex-col justify-between overflow-y-auto px-4 py-5 border-r border-outline-variant dark:border-slate-800">
                 <div class="flex flex-col gap-5">
                     <div class="flex items-center gap-3 px-2">
                         <div class="w-9 h-9 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
@@ -187,9 +187,12 @@
             </aside>
 
             <!-- Main -->
-            <div class="lg:pl-[240px] min-h-screen pt-14 lg:pt-0">
-                <header class="hidden lg:flex fixed top-0 left-[240px] right-0 h-16 bg-surface-container-lowest dark:bg-[#0f172a] z-40 px-8 items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)] dark:shadow-none border-b border-outline-variant dark:border-slate-800">
+            <div class="lg:pl-[240px] min-h-screen pt-14 lg:pt-0" :class="!sidebarExpanded ? 'lg:!pl-0' : ''">
+                <header class="hidden lg:flex fixed top-0 left-[240px] right-0 h-16 bg-surface-container-lowest dark:bg-[#0f172a] z-40 px-8 items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)] dark:shadow-none border-b border-outline-variant dark:border-slate-800" :class="!sidebarExpanded ? 'lg:!left-0' : ''">
                     <div class="flex items-center gap-4 flex-1">
+                        <button @click="sidebarExpanded = !sidebarExpanded" class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors">
+                            <span class="material-symbols-outlined text-[24px]">menu</span>
+                        </button>
                         <form method="GET" action="{{ route('tasks.index') }}" class="relative flex items-center w-72">
                             <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">search</span>
                             <input name="q" value="{{ request('q') }}" class="w-full h-10 pl-9 pr-4 rounded-xl bg-surface-container-low dark:bg-slate-800 text-on-surface placeholder:text-outline font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-primary-container transition-all border border-transparent focus:border-primary-container" placeholder="Cari tugas..." type="text">
