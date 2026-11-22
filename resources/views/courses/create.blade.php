@@ -16,6 +16,37 @@
                 <input type="text" name="code" value="{{ old('code') }}" class="h-11 px-4 rounded-lg bg-surface-container-low text-on-surface border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container font-body-md text-body-md placeholder:text-outline">
                 @error('code') <p class="font-body-sm text-body-sm text-error">{{ $message }}</p> @enderror
             </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="flex flex-col gap-2">
+                    <label class="font-label-md text-label-md text-on-surface-variant font-medium">Hari</label>
+                    <select name="day" class="h-11 px-4 rounded-lg bg-surface-container-low text-on-surface border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container font-body-md text-body-md">
+                        <option value="">Pilih Hari</option>
+                        @foreach(['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] as $day)
+                            <option value="{{ $day }}" {{ old('day') == $day ? 'selected' : '' }}>{{ $day }}</option>
+                        @endforeach
+                    </select>
+                    @error('day') <p class="font-body-sm text-body-sm text-error">{{ $message }}</p> @enderror
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="font-label-md text-label-md text-on-surface-variant font-medium">Jam Kuliah</label>
+                    <input type="text" name="time" value="{{ old('time') }}" placeholder="Contoh: 08:00 - 10:30" class="h-11 px-4 rounded-lg bg-surface-container-low text-on-surface border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container font-body-md text-body-md placeholder:text-outline">
+                    @error('time') <p class="font-body-sm text-body-sm text-error">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="flex flex-col gap-2">
+                    <label class="font-label-md text-label-md text-on-surface-variant font-medium">SKS</label>
+                    <input type="number" name="sks" value="{{ old('sks') }}" min="1" max="10" placeholder="Contoh: 3" class="h-11 px-4 rounded-lg bg-surface-container-low text-on-surface border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container font-body-md text-body-md placeholder:text-outline">
+                    @error('sks') <p class="font-body-sm text-body-sm text-error">{{ $message }}</p> @enderror
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="font-label-md text-label-md text-on-surface-variant font-medium">Dosen Pengajar</label>
+                    <input type="text" name="lecturer" value="{{ old('lecturer') }}" placeholder="Nama Dosen & Gelar" class="h-11 px-4 rounded-lg bg-surface-container-low text-on-surface border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container font-body-md text-body-md placeholder:text-outline">
+                    @error('lecturer') <p class="font-body-sm text-body-sm text-error">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
             <div class="flex flex-col gap-2">
                 <label class="font-label-md text-label-md text-on-surface-variant font-medium">Warna</label>
                 <input type="color" name="color" value="{{ old('color', '#4F46E5') }}" class="h-11 w-24 rounded-lg bg-surface-container-low border border-outline-variant cursor-pointer">

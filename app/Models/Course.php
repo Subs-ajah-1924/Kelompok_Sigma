@@ -18,6 +18,10 @@ class Course extends Model
         'name',
         'code',
         'color',
+        'day',
+        'time',
+        'sks',
+        'lecturer',
     ];
 
     public function user(): BelongsTo

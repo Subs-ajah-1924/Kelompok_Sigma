@@ -23,7 +23,13 @@
                     </div>
                     <div class="min-w-0">
                         <div class="font-title-md text-title-md text-on-surface font-semibold truncate">{{ $course->name }}</div>
-                        <div class="font-body-sm text-body-sm text-on-surface-variant">{{ $course->code ?: 'Tanpa kode' }} • {{ $course->tasks_count }} tugas</div>
+                        <div class="font-body-sm text-body-sm text-on-surface-variant flex flex-wrap items-center gap-2 mt-0.5">
+                            @if($course->code)<span>{{ $course->code }}</span> • @endif
+                            <span>{{ $course->tasks_count }} tugas</span>
+                            @if($course->sks) • <span>{{ $course->sks }} SKS</span> @endif
+                            @if($course->day || $course->time) • <span>{{ $course->day }} {{ $course->time }}</span> @endif
+                            @if($course->lecturer) • <span>{{ $course->lecturer }}</span> @endif
+                        </div>
                     </div>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
