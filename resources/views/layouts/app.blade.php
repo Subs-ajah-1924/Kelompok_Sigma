@@ -52,14 +52,14 @@
             $themeColor = auth()->user()->theme_color ?? 'indigo';
             $themePrimary = match($themeColor) {
                 'rose' => '225 29 72',     // Rose 600
-                'emerald' => '5 150 105',  // Emerald 600
+                'emerald' => '6 95 70',     // Emerald 800 (hijau tua pekat/tebal)
                 'amber' => '217 119 6',    // Amber 600
                 'sky' => '2 132 199',      // Sky 600
                 default => '79 70 229',    // Indigo 600
             };
             $themePrimaryContainer = match($themeColor) {
                 'rose' => '244 63 94',
-                'emerald' => '16 185 129',
+                'emerald' => '4 120 87',   // Emerald 700 container
                 'amber' => '245 158 11',
                 'sky' => '14 165 233',
                 default => '79 70 229',
