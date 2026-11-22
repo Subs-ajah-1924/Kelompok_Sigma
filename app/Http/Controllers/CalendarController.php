@@ -16,8 +16,8 @@ class CalendarController extends Controller
             $month = now()->startOfMonth();
         }
 
-        $gridStart = $month->copy()->startOfWeek(Carbon::MONDAY);
-        $gridEnd = $month->copy()->endOfWeek(Carbon::SUNDAY);
+        $gridStart = $month->copy()->startOfMonth()->startOfWeek(Carbon::MONDAY);
+        $gridEnd = $month->copy()->endOfMonth()->endOfWeek(Carbon::SUNDAY);
 
         $tasks = auth()->user()->tasks()
             ->with('course')
