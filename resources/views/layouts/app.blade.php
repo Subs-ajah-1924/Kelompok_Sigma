@@ -92,7 +92,6 @@
                                 ['route' => 'tasks.index', 'label' => 'Tugas', 'icon' => 'task_alt'],
                                 ['route' => 'kanban.index', 'label' => 'Kanban', 'icon' => 'view_kanban'],
                                 ['route' => 'calendar.index', 'label' => 'Kalender', 'icon' => 'calendar_month'],
-                                ['route' => 'notifications.index', 'label' => 'Notifikasi', 'icon' => 'notifications'],
                                 ['route' => 'courses.index', 'label' => 'Mata Kuliah', 'icon' => 'auto_stories'],
                             ];
                         @endphp
@@ -147,7 +146,6 @@
                         </div>
                         <div class="flex flex-col min-w-0">
                             <span class="font-label-md text-label-md font-semibold leading-tight truncate">{{ Auth::user()->name }}</span>
-                            <span class="font-label-sm text-label-sm text-tertiary dark:text-emerald-400 font-medium truncate">Mahasiswa Aktif</span>
                         </div>
                     </div>
                     <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl font-label-lg text-label-lg text-outline-variant dark:text-slate-400 hover:bg-surface-container-highest/10 dark:hover:bg-slate-800/60 hover:text-inverse-on-surface dark:hover:text-slate-100 transition-all">
@@ -170,13 +168,7 @@
                     <span class="material-symbols-outlined text-[24px]">menu</span>
                 </button>
                 <a href="{{ route('dashboard') }}" class="font-headline-sm text-headline-sm font-bold text-primary">TasKuy</a>
-                <a href="{{ route('notifications.index') }}" class="relative p-2 text-on-surface-variant" aria-label="Notifikasi">
-                    <span class="material-symbols-outlined text-[24px]">notifications</span>
-                    @php $notifCount = auth()->user()->tasks()->where('status', '!=', 'done')->where('is_read', false)->count(); @endphp
-                    @if ($notifCount > 0)
-                        <span class="absolute top-1 right-1 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-on-error bg-error rounded-full">{{ $notifCount > 9 ? '9+' : $notifCount }}</span>
-                    @endif
-                </a>
+                <div class="w-10"></div>
             </div>
 
             <!-- Mobile drawer -->
