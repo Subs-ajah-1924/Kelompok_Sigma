@@ -29,26 +29,43 @@
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-label-md text-label-md text-on-surface-variant font-medium">Jam Kuliah</label>
-                    <select name="time" class="h-11 px-4 rounded-lg bg-surface-container-low text-on-surface border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container font-body-md text-body-md">
-                        <option value="">Pilih Jam Kuliah</option>
-                        @foreach([
-                            '07:00 - 08:40',
-                            '08:00 - 09:40',
-                            '08:00 - 10:30',
-                            '09:00 - 10:40',
-                            '09:50 - 11:30',
-                            '10:40 - 12:20',
-                            '13:00 - 14:40',
-                            '13:00 - 15:30',
-                            '14:50 - 16:30',
-                            '15:40 - 17:20',
-                            '18:30 - 21:00'
-                        ] as $timeSlot)
-                            <option value="{{ $timeSlot }}" {{ old('time', $course->time) == $timeSlot ? 'selected' : '' }}>{{ $timeSlot }}</option>
-                        @endforeach
-                    </select>
+                    <div class="flex items-center gap-2">
+                        <input type="time" name="start_time" class="h-11 px-3 rounded-lg bg-surface-container-low text-on-surface border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container font-body-md text-body-md">
+                        <span class="text-on-surface-variant font-medium">s/d</span>
+                        <input type="time" name="end_time" class="h-11 px-3 rounded-lg bg-surface-container-low text-on-surface border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container font-body-md text-body-md">
+                        <input type="hidden" name="time" id="time_combined" value="{{ old('time', $course->time) }}">
+                    </div>
                     @error('time') <p class="font-body-sm text-body-sm text-error">{{ $message }}</p> @enderror
                 </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const startInput = document.querySelector('input[name="start_time"]');
+                        const endInput = document.querySelector('input[name="end_time"]');
+                        const combinedInput = document.getElementById('time_combined');
+
+                        const existingVal = combinedInput.value;
+                        if (existingVal && existingVal.includes('-')) {
+                            const parts = existingVal.split('-').map(s => s.trim());
+                            if (parts[0]) startInput.value = parts[0];
+                            if (parts[1]) endInput.value = parts[1];
+                        } else if (existingVal) {
+                            startInput.value = existingVal.trim();
+                        }
+
+                        function updateTime() {
+                            if (startInput.value && endInput.value) {
+                                combinedInput.value = startInput.value + ' - ' + endInput.value;
+                            } else if (startInput.value) {
+                                combinedInput.value = startInput.value;
+                            } else {
+                                combinedInput.value = '';
+                            }
+                        }
+
+                        startInput.addEventListener('change', updateTime);
+                        endInput.addEventListener('change', updateTime);
+                    });
+                </script>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
