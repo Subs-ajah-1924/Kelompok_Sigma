@@ -27,8 +27,8 @@
     <body class="font-sans antialiased bg-background text-on-surface">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
             <div class="mb-6 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-secondary-container to-primary-container flex items-center justify-center text-on-primary shadow-sm">
-                    <span class="material-symbols-outlined text-[20px]">check</span>
+                <div class="w-10 h-10 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
+                    <img src="{{ asset('images/logo.webp') }}" alt="TasKuy Logo" class="w-full h-full object-cover">
                 </div>
                 <span class="font-headline-sm text-headline-sm font-bold text-on-surface">TasKuy</span>
             </div>

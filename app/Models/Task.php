@@ -25,6 +25,7 @@ class Task extends Model
         'difficulty',
         'status',
         'completed_at',
+        'is_read',
     ];
 
     protected function casts(): array
@@ -34,6 +35,7 @@ class Task extends Model
             'completed_at' => 'datetime',
             'status' => TaskStatus::class,
             'difficulty' => Difficulty::class,
+            'is_read' => 'boolean',
         ];
     }
 
