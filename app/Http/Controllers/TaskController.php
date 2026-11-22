@@ -21,7 +21,7 @@ class TaskController extends Controller
         $query = auth()->user()->tasks()->with('course');
 
         // Search
-        if (! empty($filters['q'])) {
+        if (! empty($filters['q']) && is_scalar($filters['q'])) {
             $query->where(function ($q) use ($filters) {
                 $q->where('title', 'like', '%'.$filters['q'].'%')
                     ->orWhere('description', 'like', '%'.$filters['q'].'%');
@@ -29,20 +29,28 @@ class TaskController extends Controller
         }
 
         // Filters
-        if (! empty($filters['course_id'])) {
+        if (! empty($filters['course_id']) && is_scalar($filters['course_id'])) {
             $query->where('course_id', $filters['course_id']);
         }
-        if (! empty($filters['status'])) {
+        if (! empty($filters['status']) && is_scalar($filters['status'])) {
             $query->where('status', $filters['status']);
         }
-        if (! empty($filters['difficulty'])) {
+        if (! empty($filters['difficulty']) && is_scalar($filters['difficulty'])) {
             $query->where('difficulty', $filters['difficulty']);
         }
         if (! empty($filters['deadline_from'])) {
-            $query->where('deadline', '>=', Carbon::parse($filters['deadline_from'])->startOfDay());
+            try {
+                $query->where('deadline', '>=', Carbon::parse($filters['deadline_from'])->startOfDay());
+            } catch (\Throwable $e) {
+                // Abaikan filter tanggal yang tidak valid, jangan sampai 500.
+            }
         }
         if (! empty($filters['deadline_to'])) {
-            $query->where('deadline', '<=', Carbon::parse($filters['deadline_to'])->endOfDay());
+            try {
+                $query->where('deadline', '<=', Carbon::parse($filters['deadline_to'])->endOfDay());
+            } catch (\Throwable $e) {
+                // Abaikan filter tanggal yang tidak valid, jangan sampai 500.
+            }
         }
 
         // Sort

@@ -17,8 +17,8 @@ class NotificationController extends Controller
             ->orderBy('deadline')
             ->get();
 
-        $overdue = $tasks->filter(fn ($t) => $t->deadline->lt($now->copy()->startOfDay()));
-        $today = $tasks->filter(fn ($t) => $t->deadline->between($now->copy()->startOfDay(), $now->copy()->endOfDay()));
+        $overdue = $tasks->filter(fn ($t) => $t->deadline->lt($now));
+        $today = $tasks->filter(fn ($t) => $t->deadline->gte($now) && $t->deadline->lte($now->copy()->endOfDay()));
         $soon = $tasks->filter(fn ($t) => $t->deadline->gt($now->copy()->endOfDay()) && $t->deadline->lte($now->copy()->addDays(3)->endOfDay()));
         $upcoming = $tasks->filter(fn ($t) => $t->deadline->gt($now->copy()->addDays(3)->endOfDay()) && $t->deadline->lte($now->copy()->addDays(7)->endOfDay()));
         $later = $tasks->filter(fn ($t) => $t->deadline->gt($now->copy()->addDays(7)->endOfDay()));
