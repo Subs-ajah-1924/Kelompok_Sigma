@@ -26,6 +26,29 @@
     </head>
     <body class="font-sans antialiased bg-background text-on-surface">
         @auth
+        @php
+            $themeColor = auth()->user()->theme_color ?? 'indigo';
+            $themePrimary = match($themeColor) {
+                'rose' => '225 29 72',     // Rose 600
+                'emerald' => '5 150 105',  // Emerald 600
+                'amber' => '217 119 6',    // Amber 600
+                'sky' => '2 132 199',      // Sky 600
+                default => '79 70 229',    // Indigo 600
+            };
+            $themePrimaryContainer = match($themeColor) {
+                'rose' => '244 63 94',
+                'emerald' => '16 185 129',
+                'amber' => '245 158 11',
+                'sky' => '14 165 233',
+                default => '79 70 229',
+            };
+        @endphp
+        <style>
+            :root {
+                --color-primary: {{ $themePrimary }};
+                --color-primary-container: {{ $themePrimaryContainer }};
+            }
+        </style>
         <div x-data="{ sidebarOpen: false }" class="min-h-screen">
             <!-- Sidebar (desktop) -->
             <aside class="fixed left-0 top-0 h-full w-[240px] bg-inverse-surface dark:bg-[#0a0c16] text-inverse-on-surface dark:text-slate-200 z-50 flex flex-col justify-between overflow-y-auto px-4 py-5 border-r border-outline-variant dark:border-slate-800">
