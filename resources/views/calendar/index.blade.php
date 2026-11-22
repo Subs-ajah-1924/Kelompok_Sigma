@@ -32,9 +32,11 @@
                     @foreach ($tasks->get($day->format('Y-m-d'), collect()) as $task)
                         <div class="text-xs bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 rounded-md px-1.5 py-0.5 mt-1 truncate" title="{{ $task->title }}">{{ $task->title }}</div>
                     @endforeach
-                    @foreach ($agendas->get($day->format('Y-m-d'), collect()) as $agenda)
-                        <div class="text-xs bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 rounded-md px-1.5 py-0.5 mt-1 truncate" title="{{ $agenda->title }}">{{ $agenda->title }}</div>
-                    @endforeach
+                    {{--
+                        @foreach ($agendas->get($day->format('Y-m-d'), collect()) as $agenda)
+                            <div class="text-xs bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 rounded-md px-1.5 py-0.5 mt-1 truncate" title="{{ $agenda->title }}">{{ $agenda->title }}</div>
+                        @endforeach
+                    --}}
                 </div>
             @endforeach
         </div>
