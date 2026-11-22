@@ -112,7 +112,7 @@
                     <p class="font-body-sm text-body-sm text-on-surface-variant">Jumlah tugas yang diselesaikan setiap minggu</p>
                 </div>
 
-                <div class="flex items-end gap-3 h-52 pt-6 px-2 overflow-x-auto pb-2">
+                <div class="flex items-end gap-3 h-52 pt-6 px-3 overflow-x-auto pb-4">
                     @php
                         $maxWeekly = max(array_merge([1], array_column($weeklyProductivity, 'count')));
                     @endphp
@@ -120,13 +120,13 @@
                         @php
                             $heightPercent = max(12, round(($weekData['count'] / max(1, $maxWeekly)) * 100));
                         @endphp
-                        <div class="flex-1 flex flex-col items-center gap-2 min-w-[50px] h-full justify-end group">
+                        <div class="flex-1 flex flex-col items-center gap-2 min-w-[70px] h-full justify-end group">
                             <span class="font-label-sm text-label-sm font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">{{ $weekData['count'] }}</span>
                             <div class="w-full bg-primary-container/30 group-hover:bg-primary-container rounded-t-lg transition-all duration-300 relative flex items-end justify-center pb-2" style="height: {{ $heightPercent }}%;">
                                 <div class="absolute inset-x-0 bottom-0 bg-primary rounded-t-lg" style="height: 100%;"></div>
                                 <span class="relative z-10 text-on-primary font-bold text-xs {{ $weekData['count'] == 0 ? 'text-on-surface-variant opacity-60' : '' }}">{{ $weekData['count'] }}</span>
                             </div>
-                            <span class="font-label-xs text-label-xs text-outline text-center truncate w-full mt-1">{{ $weekData['week'] }}</span>
+                            <span class="font-label-xs text-label-xs text-outline text-center w-full mt-1 whitespace-nowrap text-[11px]">{{ $weekData['week'] }}</span>
                         </div>
                     @endforeach
                 </div>
