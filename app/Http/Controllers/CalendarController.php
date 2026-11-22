@@ -42,6 +42,8 @@ class CalendarController extends Controller
             $current->addDay();
         }
 
-        return view('calendar.index', compact('month', 'gridStart', 'gridEnd', 'tasks', 'agendas', 'days'));
+        $holidays = config('holidays');
+
+        return view('calendar.index', compact('month', 'gridStart', 'gridEnd', 'tasks', 'agendas', 'days', 'holidays'));
     }
 }
