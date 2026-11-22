@@ -14,7 +14,7 @@ use App\Http\Controllers\ThemeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->route('dashboard');
+    return auth()->check() ? redirect()->route('dashboard') : view('welcome');
 });
 
 Route::middleware('auth')->group(function () {
