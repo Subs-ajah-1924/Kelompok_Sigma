@@ -172,7 +172,7 @@ class TaskTest extends TestCase
         $response = $this->actingAs($user)->delete(route('tasks.destroy', $task));
 
         $response->assertRedirect(route('tasks.index'));
-        $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
+        $this->assertSoftDeleted('tasks', ['id' => $task->id]);
     }
 
     public function test_user_cannot_view_other_users_task(): void

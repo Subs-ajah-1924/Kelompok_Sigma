@@ -137,7 +137,7 @@ class CourseTest extends TestCase
         $response = $this->actingAs($user)->delete(route('courses.destroy', $course));
 
         $response->assertRedirect(route('courses.index'));
-        $this->assertDatabaseMissing('courses', ['id' => $course->id]);
+        $this->assertSoftDeleted('courses', ['id' => $course->id]);
     }
 
     public function test_deleting_course_keeps_tasks_and_nulls_course_id(): void
@@ -149,7 +149,7 @@ class CourseTest extends TestCase
         $this->actingAs($user)->delete(route('courses.destroy', $course));
 
         $this->assertDatabaseHas('tasks', ['id' => $task->id, 'course_id' => null]);
-        $this->assertDatabaseMissing('courses', ['id' => $course->id]);
+        $this->assertSoftDeleted('courses', ['id' => $course->id]);
     }
 
     public function test_course_index_only_shows_own_courses(): void
