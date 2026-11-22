@@ -86,7 +86,7 @@
                                     <span>{{ $item['label'] }}</span>
                                 </div>
                                 @if ($item['route'] === 'notifications.index')
-                                    @php $badge = auth()->user()->tasks()->where('status', '!=', 'done')->where('deadline', '<=', now()->endOfDay())->count(); @endphp
+                                    @php $badge = auth()->user()->tasks()->where('status', '!=', 'done')->count(); @endphp
                                     @if ($badge > 0)
                                         <span class="px-2 py-0.5 rounded-full bg-error text-on-error font-label-sm text-label-sm font-semibold">{{ $badge > 9 ? '9+' : $badge }}</span>
                                     @endif
