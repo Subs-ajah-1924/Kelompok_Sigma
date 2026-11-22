@@ -9,7 +9,7 @@
     </x-slot>
 
     <div class="flex flex-col gap-4">
-        @foreach (['overdue' => 'Terlambat', 'today' => 'Hari Ini', 'soon' => '1-3 Hari Lagi', 'upcoming' => '4-7 Hari Lagi'] as $key => $label)
+        @foreach (['overdue' => 'Terlambat', 'today' => 'Hari Ini', 'soon' => '1-3 Hari Lagi', 'upcoming' => '4-7 Hari Lagi', 'later' => 'Lebih dari 7 Hari'] as $key => $label)
             <div class="rounded-2xl bg-surface-container-lowest p-5 border border-surface-container-high shadow-xs flex flex-col gap-3">
                 <div class="flex items-center justify-between">
                     <h3 class="font-title-md text-title-md text-on-surface font-semibold">{{ $label }}</h3>
