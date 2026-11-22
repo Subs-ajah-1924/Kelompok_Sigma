@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KanbanController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskReadController;
 use App\Http\Controllers\ThemeController;
@@ -27,6 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('courses', CourseController::class)->except(['show']);
 
     Route::get('/kanban', [KanbanController::class, 'index'])->name('kanban.index');
+    Route::get('/statistics', StatisticsController::class)->name('statistics.index');
     Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
 
     Route::resource('agendas', AgendaController::class)
