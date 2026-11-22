@@ -13,9 +13,30 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6" enctype="multipart/form-data">
         @csrf
         @method('patch')
+
+        <div class="flex items-center gap-4 mb-4">
+            @if ($user->avatar)
+                <img src="{{ asset('storage/' . $user->avatar) }}" alt="Avatar" class="w-16 h-16 rounded-full object-cover border border-gray-300">
+            @else
+                <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xl">
+                    {{ strtoupper(substr($user->name, 0, 1)) }}
+                </div>
+            @endif
+            <div class="flex-1">
+                <x-input-label for="avatar" :value="__('Avatar')" />
+                <input id="avatar" name="avatar" type="file" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
+                <x-input-error class="mt-2" :messages="$errors->get('avatar')" />
+                @if ($user->avatar)
+                    <label class="mt-2 flex items-center gap-2 text-sm text-red-600 cursor-pointer">
+                        <input type="checkbox" name="remove_avatar" value="1" class="rounded border-gray-300 text-red-600 shadow-sm focus:ring-red-500">
+                        <span>Hapus foto profil</span>
+                    </label>
+                @endif
+            </div>
+        </div>
 
         <div>
             <x-input-label for="name" :value="__('Name')" />

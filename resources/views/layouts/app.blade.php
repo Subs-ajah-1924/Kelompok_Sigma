@@ -233,9 +233,13 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-3 pl-2 border-l border-surface-container-high dark:border-slate-700">
-                            <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary">
-                                <span class="material-symbols-outlined text-[18px]">person</span>
-                            </div>
+                            @if (Auth::user()->avatar)
+                                <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
+                            @else
+                                <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary">
+                                    <span class="material-symbols-outlined text-[18px]">person</span>
+                                </div>
+                            @endif
                             <div class="flex flex-col text-left">
                                 <span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">{{ Auth::user()->name }}</span>
                                 <span class="font-label-sm text-label-sm text-tertiary dark:text-emerald-400 font-medium">Mahasiswa Aktif</span>
