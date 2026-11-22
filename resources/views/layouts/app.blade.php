@@ -17,6 +17,8 @@
                 try {
                     if (localStorage.getItem('theme') === 'dark') {
                         document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
                     }
                 } catch (e) {}
             })();
@@ -292,19 +294,24 @@
             }
             function updateThemeButtons() {
                 const dark = document.documentElement.classList.contains('dark');
-                document.querySelectorAll('.theme-btn-light').forEach(b => {
+                const lightBtn = document.querySelectorAll('.theme-btn-light');
+                const darkBtn = document.querySelectorAll('.theme-btn-dark');
+
+                lightBtn.forEach(b => {
                     b.classList.toggle('bg-surface-container-lowest', !dark);
                     b.classList.toggle('text-on-surface', !dark);
                     b.classList.toggle('shadow-xs', !dark);
                     b.classList.toggle('text-outline-variant', dark);
                 });
-                document.querySelectorAll('.theme-btn-dark').forEach(b => {
+                darkBtn.forEach(b => {
                     b.classList.toggle('bg-surface-container-lowest', dark);
                     b.classList.toggle('text-on-surface', dark);
                     b.classList.toggle('shadow-xs', dark);
                     b.classList.toggle('text-outline-variant', !dark);
                 });
             }
+            // Run immediately to prevent flash
+            updateThemeButtons();
             document.addEventListener('DOMContentLoaded', updateThemeButtons);
         </script>
     </body>
