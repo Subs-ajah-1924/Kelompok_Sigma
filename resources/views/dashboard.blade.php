@@ -15,8 +15,7 @@
         <div class="rounded-2xl bg-surface-container-lowest p-6 shadow-xs border border-surface-container-high flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div class="flex flex-col gap-1">
                 <div class="flex items-center gap-2">
-                    <h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight">Halo, {{ auth()->user()->name }}</h2>
-                    <span class="text-2xl" role="img" aria-label="emoji">✨</span>
+                    <h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight">Halo, {{ auth()->user()->name }}! 👋</h2>
                 </div>
                 <div class="flex flex-col sm:flex-row sm:items-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
                     <div class="flex items-center gap-2">
