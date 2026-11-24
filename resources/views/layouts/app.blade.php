@@ -202,8 +202,8 @@
                         <div x-data="{ open: false }" class="relative">
                             <button @click="open = !open" class="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-slate-800 hover:text-on-surface transition-colors" aria-label="Notifikasi">
                                 <span class="material-symbols-outlined text-[20px]">notifications</span>
-                                @php $hc = auth()->user()->tasks()->where('status', '!=', 'done')->where('is_read', false)->count(); @endphp
-                                @if ($hc > 0)
+                                @php $unreadCount = auth()->user()->tasks()->where('status', '!=', 'done')->where('is_read', false)->count(); @endphp
+                                @if ($unreadCount > 0)
                                     <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-error"></span>
                                 @endif
                             </button>

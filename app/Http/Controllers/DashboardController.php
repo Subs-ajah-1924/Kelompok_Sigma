@@ -31,6 +31,8 @@ class DashboardController extends Controller
         $recommendations = $user->tasks()
             ->with('course')
             ->where('status', '!=', 'done')
+            ->orderBy('deadline')
+            ->limit(50)
             ->get()
             ->map(fn ($task) => [
                 'task' => $task,

@@ -10,18 +10,15 @@ class NotificationController extends Controller
     public function index(): View
     {
         $now = now();
+        $startOfDay = $now->copy()->startOfDay();
+        $endOfDay = $now->copy()->endOfDay();
+        $base = auth()->user()->tasks()->with('course')->where('status', '!=', 'done');
 
-        $tasks = auth()->user()->tasks()
-            ->with('course')
-            ->where('status', '!=', 'done')
-            ->orderBy('deadline')
-            ->get();
-
-        $overdue = $tasks->filter(fn ($t) => $t->deadline->lt($now->copy()->startOfDay()));
-        $today = $tasks->filter(fn ($t) => $t->deadline->between($now->copy()->startOfDay(), $now->copy()->endOfDay()));
-        $soon = $tasks->filter(fn ($t) => $t->deadline->gt($now->copy()->endOfDay()) && $t->deadline->lte($now->copy()->addDays(3)->endOfDay()));
-        $upcoming = $tasks->filter(fn ($t) => $t->deadline->gt($now->copy()->addDays(3)->endOfDay()) && $t->deadline->lte($now->copy()->addDays(7)->endOfDay()));
-        $later = $tasks->filter(fn ($t) => $t->deadline->gt($now->copy()->addDays(7)->endOfDay()));
+        $overdue = (clone $base)->where('deadline', '<', $startOfDay)->orderBy('deadline')->limit(50)->get();
+        $today = (clone $base)->whereBetween('deadline', [$startOfDay, $endOfDay])->orderBy('deadline')->limit(50)->get();
+        $soon = (clone $base)->where('deadline', '>', $endOfDay)->where('deadline', '<=', $now->copy()->addDays(3)->endOfDay())->orderBy('deadline')->limit(50)->get();
+        $upcoming = (clone $base)->where('deadline', '>', $now->copy()->addDays(3)->endOfDay())->where('deadline', '<=', $now->copy()->addDays(7)->endOfDay())->orderBy('deadline')->limit(50)->get();
+        $later = (clone $base)->where('deadline', '>', $now->copy()->addDays(7)->endOfDay())->orderBy('deadline')->limit(50)->get();
 
         return view('notifications.index', compact('overdue', 'today', 'soon', 'upcoming', 'later'));
     }
