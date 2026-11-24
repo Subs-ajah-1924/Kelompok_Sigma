@@ -23,7 +23,7 @@ class StatisticsController extends Controller
 
             $count = $user->tasks()
                 ->where('status', 'done')
-                ->whereBetween('updated_at', [$startOfWeek, $endOfWeek])
+                ->whereBetween('completed_at', [$startOfWeek, $endOfWeek])
                 ->count();
 
             $weeklyProductivity[] = [
