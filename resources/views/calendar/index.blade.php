@@ -16,10 +16,14 @@
                     <span class="material-symbols-outlined text-[20px]">chevron_right</span>
                 </a>
             </div>
+            <button type="button" @click="agendaModal = true" class="h-10 px-4 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-md font-medium shadow-sm transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                <span>Tambah Agenda</span>
+            </button>
         </div>
     </x-slot>
 
-    <div x-data="{ activeDate: null, activeItems: [], activeTitle: '' }" class="rounded-2xl bg-surface-container-lowest p-6 border border-surface-container-high shadow-xs relative">
+    <div x-data="{ activeDate: null, activeItems: [], activeTitle: '', agendaModal: false }" class="rounded-2xl bg-surface-container-lowest p-6 border border-surface-container-high shadow-xs relative">
         <div class="grid grid-cols-7 gap-2 mb-2">
             @foreach (['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'] as $d)
                 <div class="text-center font-label-md text-label-md text-outline font-semibold py-2">{{ $d }}</div>
@@ -31,7 +35,8 @@
                     $dateStr = $day->format('Y-m-d');
                     $holiday = $holidays[$dateStr] ?? null;
                     $dayTasks = $tasks->get($dateStr, collect());
-                    $hasDetail = $holiday || $dayTasks->count() > 0;
+                    $dayAgendas = $agendas->get($dateStr, collect());
+                    $hasDetail = $holiday || $dayTasks->count() > 0 || $dayAgendas->count() > 0;
                     
                     $itemList = [];
                     if ($holiday) {
@@ -39,6 +44,9 @@
                     }
                     foreach ($dayTasks as $t) {
                         $itemList[] = '📚 ' . $t->title . ($t->course && $t->course->name ? ' (' . $t->course->name . ')' : '');
+                    }
+                    foreach ($dayAgendas as $a) {
+                        $itemList[] = '📌 ' . $a->title . ($a->start_time ? ' (' . substr((string) $a->start_time, 0, 5) . ')' : '');
                     }
                 @endphp
                 <div class="relative rounded-xl bg-surface-container-low/40 dark:bg-slate-800/40 border border-surface-container-high dark:border-slate-700 p-2 min-h-[100px] flex flex-col justify-between {{ $day->isToday() ? 'ring-2 ring-primary-container' : '' }}">
@@ -56,6 +64,9 @@
                         @endif
                         @foreach ($dayTasks as $task)
                             <div class="text-xs bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 rounded-md px-1.5 py-0.5 mt-1 truncate" title="{{ $task->title }}">{{ $task->title }}</div>
+                        @endforeach
+                        @foreach ($dayAgendas as $agenda)
+                            <div class="text-xs bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 rounded-md px-1.5 py-0.5 mt-1 truncate" title="{{ $agenda->title }}">{{ $agenda->title }}</div>
                         @endforeach
                     </div>
 
@@ -78,5 +89,49 @@
                 </div>
             @endforeach
         </div>
+
+    <!-- Modal tambah agenda -->
+    <div x-show="agendaModal" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" style="display:none;">
+        <div @click.away="agendaModal = false" class="w-full max-w-md rounded-2xl bg-surface-container-lowest p-6 border border-surface-container-high shadow-xl flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+                <h3 class="font-title-md text-title-md text-on-surface font-semibold">Tambah Agenda</h3>
+                <button type="button" @click="agendaModal = false" class="text-outline hover:text-on-surface">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            <form method="POST" action="{{ route('agendas.store') }}" class="flex flex-col gap-3">
+                @csrf
+                <div class="flex flex-col gap-2">
+                    <label class="font-label-md text-label-md text-on-surface-variant font-medium">Tanggal</label>
+                    <input type="date" name="date" value="{{ old('date') }}" class="h-11 px-4 rounded-lg bg-surface-container-low text-on-surface border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container" required>
+                    @error('date') <p class="font-body-sm text-body-sm text-error">{{ $message }}</p> @enderror
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-2">
+                        <label class="font-label-md text-label-md text-on-surface-variant font-medium">Mulai</label>
+                        <input type="time" name="start_time" value="{{ old('start_time') }}" class="h-11 px-4 rounded-lg bg-surface-container-low text-on-surface border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container">
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="font-label-md text-label-md text-on-surface-variant font-medium">Selesai</label>
+                        <input type="time" name="end_time" value="{{ old('end_time') }}" class="h-11 px-4 rounded-lg bg-surface-container-low text-on-surface border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container">
+                    </div>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="font-label-md text-label-md text-on-surface-variant font-medium">Judul</label>
+                    <input type="text" name="title" value="{{ old('title') }}" class="h-11 px-4 rounded-lg bg-surface-container-low text-on-surface border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container" required>
+                    @error('title') <p class="font-body-sm text-body-sm text-error">{{ $message }}</p> @enderror
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="font-label-md text-label-md text-on-surface-variant font-medium">Deskripsi</label>
+                    <textarea name="description" rows="3" class="px-4 py-2 rounded-lg bg-surface-container-low text-on-surface border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container">{{ old('description') }}</textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" @click="agendaModal = false" class="h-10 px-4 rounded-xl bg-surface-container-low text-on-surface font-label-md font-medium">Batal</button>
+                    <button type="submit" class="h-10 px-4 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-md font-medium shadow-sm">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     </div>
 </x-app-layout>
