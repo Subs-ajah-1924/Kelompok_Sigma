@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Course;
+use App\Models\Group;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -272,5 +273,19 @@ class TaskTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('MK Test');
+    }
+    public function test_soft_deleting_task_detaches_group_pivot(): void
+    {
+        $user = User::factory()->create();
+        $group = Group::create(['owner_id' => $user->id, 'name' => 'Grup Test']);
+        $task = Task::factory()->create(['user_id' => $user->id]);
+
+        $group->tasks()->attach($task);
+
+        $this->assertDatabaseHas('group_task', ['group_id' => $group->id, 'task_id' => $task->id]);
+
+        $task->delete();
+
+        $this->assertDatabaseMissing('group_task', ['group_id' => $group->id, 'task_id' => $task->id]);
     }
 }

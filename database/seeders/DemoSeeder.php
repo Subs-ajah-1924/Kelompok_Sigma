@@ -15,31 +15,51 @@ class DemoSeeder extends Seeder
     public function run(): void
     {
         // User 1 (matches README)
-        $user1 = User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => bcrypt('password'),
-        ]);
+        $user1 = User::updateOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+                'password' => bcrypt('password'),
+            ]
+        );
 
         // User 2 (for isolation testing)
-        $user2 = User::factory()->create([
-            'name' => 'Demo User 2',
-            'email' => 'demo2@example.com',
-            'password' => bcrypt('password'),
-        ]);
+        $user2 = User::updateOrCreate(
+            ['email' => 'demo2@example.com'],
+            [
+                'name' => 'Demo User 2',
+                'password' => bcrypt('password'),
+            ]
+        );
 
         // Courses for user 1
-        $courses1 = collect([
-            Course::factory()->create(['user_id' => $user1->id, 'name' => 'Pemrograman Web', 'code' => 'PW001', 'color' => '#4F46E5']),
-            Course::factory()->create(['user_id' => $user1->id, 'name' => 'Basis Data', 'code' => 'BD002', 'color' => '#059669']),
-            Course::factory()->create(['user_id' => $user1->id, 'name' => 'Algoritma', 'code' => 'ALG003', 'color' => '#D97706']),
-        ]);
+        $courseDefinitions1 = [
+            ['name' => 'Pemrograman Web', 'code' => 'PW001', 'color' => '#4F46E5'],
+            ['name' => 'Basis Data', 'code' => 'BD002', 'color' => '#059669'],
+            ['name' => 'Algoritma', 'code' => 'ALG003', 'color' => '#D97706'],
+        ];
+
+        $courses1 = collect();
+        foreach ($courseDefinitions1 as $definition) {
+            $courses1->push(Course::updateOrCreate(
+                ['user_id' => $user1->id, 'name' => $definition['name']],
+                array_merge($definition, ['user_id' => $user1->id])
+            ));
+        }
 
         // Courses for user 2
-        $courses2 = collect([
-            Course::factory()->create(['user_id' => $user2->id, 'name' => 'Jaringan Komputer', 'code' => 'JK001', 'color' => '#DC2626']),
-            Course::factory()->create(['user_id' => $user2->id, 'name' => 'Sistem Operasi', 'code' => 'SO002', 'color' => '#7C3AED']),
-        ]);
+        $courseDefinitions2 = [
+            ['name' => 'Jaringan Komputer', 'code' => 'JK001', 'color' => '#DC2626'],
+            ['name' => 'Sistem Operasi', 'code' => 'SO002', 'color' => '#7C3AED'],
+        ];
+
+        $courses2 = collect();
+        foreach ($courseDefinitions2 as $definition) {
+            $courses2->push(Course::updateOrCreate(
+                ['user_id' => $user2->id, 'name' => $definition['name']],
+                array_merge($definition, ['user_id' => $user2->id])
+            ));
+        }
 
         // Tasks for user 1 - various deadlines
         $now = now();
@@ -56,32 +76,48 @@ class DemoSeeder extends Seeder
             ['title' => 'Testing Aplikasi', 'difficulty' => Difficulty::Sulit, 'status' => TaskStatus::Todo, 'deadline' => $now->copy()->addDays(4)],
         ];
 
-        foreach ($taskData as $i => $data) {
-            $task = Task::factory()->create([
-                'user_id' => $user1->id,
-                'course_id' => $courses1->random()->id,
-                'title' => $data['title'],
-                'difficulty' => $data['difficulty'],
-                'status' => $data['status'],
-                'deadline' => $data['deadline'],
-                'completed_at' => $data['status'] === TaskStatus::Done ? now() : null,
-            ]);
+        foreach ($taskData as $data) {
+            Task::updateOrCreate(
+                ['user_id' => $user1->id, 'title' => $data['title']],
+                [
+                    'user_id' => $user1->id,
+                    'course_id' => $courses1->random()->id,
+                    'title' => $data['title'],
+                    'difficulty' => $data['difficulty'],
+                    'status' => $data['status'],
+                    'deadline' => $data['deadline'],
+                    'completed_at' => $data['status'] === TaskStatus::Done ? now() : null,
+                ]
+            );
         }
 
         // Tasks for user 2
         for ($i = 0; $i < 3; $i++) {
-            Task::factory()->create([
-                'user_id' => $user2->id,
-                'course_id' => $courses2->random()->id,
-            ]);
+            Task::firstOrCreate(
+                ['user_id' => $user2->id, 'title' => 'Tugas Demo '.($i + 1)],
+                [
+                    'user_id' => $user2->id,
+                    'course_id' => $courses2->random()->id,
+                    'title' => 'Tugas Demo '.($i + 1),
+                    'difficulty' => Difficulty::Sedang,
+                    'status' => TaskStatus::Todo,
+                    'deadline' => $now->copy()->addDays($i + 1),
+                ]
+            );
         }
 
         // Agendas for user 1
+        $user1->agendas()->forceDelete();
         for ($i = 0; $i < 4; $i++) {
-            Agenda::factory()->create([
-                'user_id' => $user1->id,
-                'date' => $now->copy()->addDays($i + 1)->format('Y-m-d'),
-            ]);
+            $date = $now->copy()->addDays($i + 1)->format('Y-m-d');
+            Agenda::firstOrCreate(
+                ['user_id' => $user1->id, 'date' => $date, 'title' => 'Agenda '.($i + 1)],
+                [
+                    'user_id' => $user1->id,
+                    'date' => $date,
+                    'title' => 'Agenda '.($i + 1),
+                ]
+            );
         }
     }
 }

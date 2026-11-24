@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Task extends Model
@@ -48,6 +49,11 @@ class Task extends Model
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class)->withDefault();
+    }
+
+    public function groups(): BelongsToMany
+    {
+        return $this->belongsToMany(Group::class, 'group_task')->withTimestamps();
     }
 
     // Query Scopes
@@ -89,5 +95,11 @@ class Task extends Model
     public function scopeOverdue(Builder $query): Builder
     {
         return $query->where('deadline', '<', now()->startOfDay());
+    }
+    protected static function booted(): void
+    {
+        static::deleting(function (Task $task): void {
+            $task->groups()->detach();
+        });
     }
 }
