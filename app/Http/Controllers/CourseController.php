@@ -24,7 +24,10 @@ class CourseController extends Controller
 
     public function store(StoreCourseRequest $request): RedirectResponse
     {
-        auth()->user()->courses()->create($request->validated());
+        $data = $request->validated();
+        unset($data['start_time'], $data['end_time']);
+
+        auth()->user()->courses()->create($data);
 
         return redirect()->route('courses.index')->with('success', 'Mata kuliah berhasil ditambahkan.');
     }
@@ -40,7 +43,10 @@ class CourseController extends Controller
     {
         $this->authorize('update', $course);
 
-        $course->update($request->validated());
+        $data = $request->validated();
+        unset($data['start_time'], $data['end_time']);
+
+        $course->update($data);
 
         return redirect()->route('courses.index')->with('success', 'Mata kuliah berhasil diperbarui.');
     }

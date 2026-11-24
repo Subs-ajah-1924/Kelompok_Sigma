@@ -213,4 +213,33 @@ class CourseTest extends TestCase
         $response->assertOk();
         $response->assertSee('3 tugas');
     }
+    public function test_course_schedule_is_joined_on_server(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post(route('courses.store'), [
+            'name' => 'Jadwal Server',
+            'start_time' => '08:00',
+            'end_time' => '10:30',
+        ]);
+
+        $response->assertRedirect(route('courses.index'));
+        $this->assertDatabaseHas('courses', [
+            'name' => 'Jadwal Server',
+            'time' => '08:00 - 10:30',
+        ]);
+    }
+
+    public function test_course_schedule_rejects_end_before_start(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post(route('courses.store'), [
+            'name' => 'Jadwal Salah',
+            'start_time' => '10:00',
+            'end_time' => '09:00',
+        ]);
+
+        $response->assertSessionHasErrors('end_time');
+    }
 }
