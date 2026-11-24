@@ -113,7 +113,7 @@
                             @endphp
                             <a href="{{ route($item['route']) }}"
                                class="flex items-center justify-between px-3 py-2.5 rounded-xl font-label-lg text-label-lg transition-all
-                                      {{ $active ? 'bg-primary-container text-on-primary font-semibold shadow-sm' : 'text-outline-variant dark:text-slate-400 hover:bg-surface-container-highest/10 dark:hover:bg-slate-800/60 hover:text-inverse-on-surface dark:hover:text-slate-100' }}">
+                                      {{ $active ? 'bg-primary text-white font-semibold shadow-sm' : 'text-outline-variant dark:text-slate-400 hover:bg-surface-container-highest/10 dark:hover:bg-slate-800/60 hover:text-inverse-on-surface dark:hover:text-slate-100' }}">
                                 <div class="flex items-center gap-3">
                                     <span class="material-symbols-outlined text-[20px]">{{ $item['icon'] }}</span>
                                     <span>{{ $item['label'] }}</span>
@@ -134,7 +134,7 @@
                             @php
                                 $statActive = request()->routeIs('statistics.index');
                             @endphp
-                            <a href="{{ route('statistics.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-label-lg text-label-lg transition-all {{ $statActive ? 'bg-primary-container text-on-primary font-semibold shadow-sm' : 'text-outline-variant dark:text-slate-400 hover:bg-surface-container-highest/10 dark:hover:bg-slate-800/60 hover:text-inverse-on-surface dark:hover:text-slate-100' }}">
+                            <a href="{{ route('statistics.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-label-lg text-label-lg transition-all {{ $statActive ? 'bg-primary text-white font-semibold shadow-sm' : 'text-outline-variant dark:text-slate-400 hover:bg-surface-container-highest/10 dark:hover:bg-slate-800/60 hover:text-inverse-on-surface dark:hover:text-slate-100' }}">
                                 <span class="material-symbols-outlined text-[20px]">bar_chart</span>
                                 <span>Statistik</span>
                             </a>
@@ -197,23 +197,23 @@
 
             <!-- Main -->
             <div class="lg:pl-[240px] min-h-screen pt-14 lg:pt-0" :class="!sidebarExpanded ? 'lg:!pl-0' : ''">
-                <header class="hidden lg:flex fixed top-0 left-[240px] right-0 h-16 bg-surface-container-lowest dark:bg-[#0f172a] z-40 px-8 items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)] dark:shadow-none border-b border-outline-variant dark:border-slate-800" :class="!sidebarExpanded ? 'lg:!left-0' : ''">
+                <header class="hidden lg:flex fixed top-0 left-[240px] right-0 h-16 bg-primary dark:bg-primary text-white z-40 px-8 items-center justify-between shadow-sm dark:shadow-none border-b-0" :class="!sidebarExpanded ? 'lg:!left-0' : ''">
                     <div class="flex items-center gap-4 flex-1">
-                        <button @click="sidebarExpanded = !sidebarExpanded" class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors">
+                        <button @click="sidebarExpanded = !sidebarExpanded" class="p-2 text-white dark:text-slate-300 hover:bg-white/10 rounded-lg transition-colors">
                             <span class="material-symbols-outlined text-[24px]">menu</span>
                         </button>
                         <form method="GET" action="{{ route('tasks.index') }}" class="relative flex items-center w-72" x-data="{ query: '{{ request('q') }}' }">
-                            <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">search</span>
-                            <input name="q" x-model="query" @input.debounce.300ms="$el.form.submit()" class="w-full h-10 pl-9 pr-4 rounded-xl bg-surface-container-low dark:bg-slate-800 text-on-surface placeholder:text-outline font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-primary-container transition-all border border-transparent focus:border-primary-container" placeholder="Cari tugas..." type="text">
+                            <span class="material-symbols-outlined absolute left-3 text-white/70 dark:text-outline text-[18px]">search</span>
+                            <input name="q" x-model="query" @input.debounce.300ms="$el.form.submit()" class="w-full h-10 pl-9 pr-4 rounded-xl bg-white/10 dark:bg-slate-800 text-white dark:text-on-surface placeholder:text-white/60 dark:placeholder:text-outline font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-white dark:focus:ring-[color:var(--color-primary-container)] transition-all border border-transparent focus:border-white" placeholder="Cari tugas..." type="text">
                         </form>
                     </div>
                     <div class="flex items-center gap-4">
                         <div x-data="{ open: false }" class="relative">
-                            <button @click="open = !open" class="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-slate-800 hover:text-on-surface transition-colors" aria-label="Notifikasi">
+                            <button @click="open = !open" class="relative p-2 rounded-xl text-white/80 dark:text-on-surface-variant hover:bg-white/10 dark:hover:bg-slate-800 hover:text-white dark:hover:text-on-surface transition-colors" aria-label="Notifikasi">
                                 <span class="material-symbols-outlined text-[20px]">notifications</span>
                                 @php $hc = auth()->user()->tasks()->where('status', '!=', 'done')->where('is_read', false)->count(); @endphp
                                 @if ($hc > 0)
-                                    <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-error"></span>
+                                    <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-white dark:bg-error"></span>
                                 @endif
                             </button>
 
@@ -243,17 +243,17 @@
                                 </div>
                             </div>
                         </div>
-                                <div x-data="{ profileOpen: false }" class="relative pl-2 border-l border-surface-container-high dark:border-slate-700">
+                                <div x-data="{ profileOpen: false }" class="relative pl-2 border-l border-white/20 dark:border-slate-700">
                             <button @click="profileOpen = !profileOpen" class="flex items-center gap-3 cursor-pointer focus:outline-none" aria-label="Profil Menu">
                                 @if (Auth::user()->avatar)
                                     <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
                                 @else
-                                    <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary">
+                                    <div class="w-8 h-8 rounded-full bg-white/20 dark:bg-primary-container flex items-center justify-center text-white dark:text-on-primary">
                                         <span class="material-symbols-outlined text-[18px]">person</span>
                                     </div>
                                 @endif
                                 <div class="flex flex-col text-left">
-                                    <span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">{{ Auth::user()->name }}</span>
+                                    <span class="font-label-md text-label-md text-white dark:text-on-surface font-semibold leading-tight">{{ Auth::user()->name }}</span>
                                 </div>
                             </button>
 

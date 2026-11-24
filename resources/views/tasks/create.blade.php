@@ -52,7 +52,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-3 pt-2">
-                <button type="submit" class="h-10 px-5 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg font-medium shadow-sm transition-all">Simpan</button>
+                <button type="submit" class="h-10 px-5 rounded-xl bg-primary hover:bg-primary text-white font-label-lg text-label-lg font-medium shadow-sm transition-all">Simpan</button>
                 <a href="{{ route('tasks.index') }}" class="h-10 px-5 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-label-lg text-label-lg font-medium transition-all flex items-center">Batal</a>
             </div>
         </form>
