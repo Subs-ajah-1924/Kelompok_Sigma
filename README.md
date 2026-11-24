@@ -6,9 +6,10 @@ Proyek Kelompok Sigma, sebelumnya bernama Sigma Task Manager.
 Fokusnya: isolasi data antar pengguna, tampilan responsif, dan UI yang ringan.
 Dibangun dengan Laravel dan database relasional.
 
-> **Status saat ini:** setup awal selesai. Fitur aplikasi (tugas, kanban,
-> rekomendasi, notifikasi, kalender) **belum diimplementasikan**.
-> Rencana lengkapnya ada di `instruksi.txt`.
+> **Status saat ini:** fitur inti sudah diimplementasikan (tugas, mata kuliah,
+> kalender + agenda, Kanban tampilan, rekomendasi, notifikasi, statistik,
+> tema, profil). Sebagian masih parsial: drag-and-drop Kanban, fitur kelompok
+> (beta), restore soft delete, dan upload avatar. Lihat tabel status di bawah.
 
 ## Tech Stack
 
@@ -19,7 +20,7 @@ Dibangun dengan Laravel dan database relasional.
 | Autentikasi | Laravel Breeze 2.3 (stack Blade) |
 | Tampilan | Blade + Tailwind CSS + Alpine.js |
 | Build tool | Vite 8 |
-| Kanban | SortableJS (dependency sudah ada, belum diimplementasikan) |
+| Kanban | SortableJS (tersedia; drag-and-drop masih parsial) |
 | Database (dev) | SQLite |
 | Testing & format | PHPUnit 11 + Laravel Pint |
 
@@ -126,12 +127,21 @@ lewat GitHub adalah struktur database (migration) dan data awal (seeder).
 | Bagian | Status |
 | --- | --- |
 | Setup Laravel + Breeze | Selesai |
-| Route (`routes/web.php`) | Sudah disiapkan |
-| Controller tugas, matkul, Kanban, kalender | Placeholder, `store()` masih abort 501 |
-| Model dan migration `courses`, `tasks`, `agendas` | Belum ada, baru model `User` |
-| Fitur tugas, Kanban, rekomendasi, notifikasi, kalender | Belum diimplementasikan |
+| Autentikasi (login/register/profil) | Selesai |
+| Model & migration `users`, `courses`, `tasks`, `agendas`, `groups` | Selesai |
+| CRUD tugas, mata kuliah, agenda kalender | Selesai |
+| Kalender (grid + agenda) | Selesai |
+| Kanban (tampilan kolom) | Selesai; drag-and-drop parsial |
+| Rekomendasi prioritas tugas | Selesai |
+| Notifikasi tugas baru/belum dibaca | Selesai |
+| Statistik & produktivitas | Selesai |
+| Tema warna (light/dark) | Selesai |
+| Fitur kelompok (beta) | Parsial, lihat issue #14 |
+| Upload avatar | Parsial |
+| Restore soft delete | Belum diimplementasikan |
+| Testing & CI | Sebagian; lihat `.github/workflows/tests.yml` |
 
-Detail rencananya ada di `instruksi.txt` bagian 5 (database) dan 9 (fitur).
+Detail rencana awal ada di `instruksi.txt`; status terbaru dilacak lewat GitHub Issues.
 
 ## Testing
 
