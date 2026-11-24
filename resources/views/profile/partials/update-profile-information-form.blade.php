@@ -78,7 +78,7 @@
                     x-show="show"
                     x-transition
                     x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600 dark:text-slate-400"
+                    class="text-sm text-green-600 dark:text-emerald-400 font-medium"
                 >{{ __('Berhasil disimpan.') }}</p>
             @endif
         </div>
