@@ -7,7 +7,7 @@
                 </div>
                 <h1 class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">Mata Kuliah</h1>
             </div>
-            <a href="{{ route('courses.create') }}" class="flex items-center gap-2 h-10 px-4 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg font-medium shadow-sm transition-all">
+            <a href="{{ route('courses.create') }}" class="flex items-center gap-2 h-10 px-4 rounded-xl bg-primary hover:bg-primary text-white font-label-lg text-label-lg font-medium shadow-sm transition-all">
                 <span class="material-symbols-outlined text-[18px]">add</span>
                 <span>Tambah Mata Kuliah</span>
             </a>
@@ -48,7 +48,7 @@
             <div class="rounded-2xl bg-surface-container-lowest p-10 border border-surface-container-high shadow-xs text-center">
                 <span class="material-symbols-outlined text-[48px] text-outline">auto_stories</span>
                 <p class="mt-3 font-body-md text-body-md text-on-surface-variant">Belum ada mata kuliah.</p>
-                <a href="{{ route('courses.create') }}" class="mt-4 inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg font-medium shadow-sm transition-all">
+                <a href="{{ route('courses.create') }}" class="mt-4 inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-primary hover:bg-primary text-white font-label-lg text-label-lg font-medium shadow-sm transition-all">
                     <span class="material-symbols-outlined text-[18px]">add</span>
                     <span>Tambah sekarang</span>
                 </a>
