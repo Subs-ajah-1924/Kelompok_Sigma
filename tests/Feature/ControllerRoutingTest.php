@@ -20,6 +20,7 @@ class ControllerRoutingTest extends TestCase
             route('courses.index'),
             route('kanban.index'),
             route('calendar.index'),
+            route('statistics.index'),
             route('notifications.index'),
         ];
 
@@ -45,6 +46,7 @@ class ControllerRoutingTest extends TestCase
             route('courses.edit', $course),
             route('kanban.index'),
             route('calendar.index'),
+            route('statistics.index'),
             route('notifications.index'),
         ];
 

@@ -18,7 +18,7 @@
                 $themes = [
                     'indigo' => ['name' => 'Indigo (Default)', 'bg' => 'bg-indigo-600'],
                     'rose' => ['name' => 'Rose', 'bg' => 'bg-rose-600'],
-                    'emerald' => ['name' => 'Emerald', 'bg' => 'bg-emerald-600'],
+                    'emerald' => ['name' => 'Emerald', 'bg' => 'bg-emerald-800'],
                     'amber' => ['name' => 'Amber', 'bg' => 'bg-amber-600'],
                     'sky' => ['name' => 'Sky', 'bg' => 'bg-sky-600'],
                 ];

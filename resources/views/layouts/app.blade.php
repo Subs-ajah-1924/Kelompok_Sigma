@@ -52,14 +52,14 @@
             $themeColor = auth()->user()->theme_color ?? 'indigo';
             $themePrimary = match($themeColor) {
                 'rose' => '225 29 72',     // Rose 600
-                'emerald' => '5 150 105',  // Emerald 600
+                'emerald' => '6 95 70',     // Emerald 800 (hijau tua pekat/tebal)
                 'amber' => '217 119 6',    // Amber 600
                 'sky' => '2 132 199',      // Sky 600
                 default => '79 70 229',    // Indigo 600
             };
             $themePrimaryContainer = match($themeColor) {
                 'rose' => '244 63 94',
-                'emerald' => '16 185 129',
+                'emerald' => '4 120 87',   // Emerald 700 container
                 'amber' => '245 158 11',
                 'sky' => '14 165 233',
                 default => '79 70 229',
@@ -71,9 +71,9 @@
                 --color-primary-container: {{ $themePrimaryContainer }};
             }
         </style>
-        <div x-data="{ sidebarOpen: false }" class="min-h-screen">
+        <div x-data="{ sidebarOpen: false, sidebarExpanded: true }" class="min-h-screen">
             <!-- Sidebar (desktop) -->
-            <aside class="fixed left-0 top-0 h-full w-[240px] bg-inverse-surface dark:bg-[#0a0c16] text-inverse-on-surface dark:text-slate-200 z-50 flex flex-col justify-between overflow-y-auto px-4 py-5 border-r border-outline-variant dark:border-slate-800">
+            <aside x-show="sidebarExpanded" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" class="fixed left-0 top-0 h-full w-[240px] bg-inverse-surface dark:bg-[#0a0c16] text-inverse-on-surface dark:text-slate-200 z-50 flex flex-col justify-between overflow-y-auto px-4 py-5 border-r border-outline-variant dark:border-slate-800">
                 <div class="flex flex-col gap-5">
                     <div class="flex items-center gap-3 px-2">
                         <div class="w-9 h-9 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
@@ -92,7 +92,6 @@
                                 ['route' => 'tasks.index', 'label' => 'Tugas', 'icon' => 'task_alt'],
                                 ['route' => 'kanban.index', 'label' => 'Kanban', 'icon' => 'view_kanban'],
                                 ['route' => 'calendar.index', 'label' => 'Kalender', 'icon' => 'calendar_month'],
-                                ['route' => 'notifications.index', 'label' => 'Notifikasi', 'icon' => 'notifications'],
                                 ['route' => 'courses.index', 'label' => 'Mata Kuliah', 'icon' => 'auto_stories'],
                             ];
                         @endphp
@@ -118,11 +117,14 @@
                     </nav>
 
                     <div class="pt-2">
-                        <p class="px-3 font-label-sm text-label-sm text-outline-variant dark:text-slate-500 font-semibold tracking-wider uppercase mb-2">Workspace Views</p>
+                        <p class="px-3 font-label-sm text-label-sm text-outline-variant dark:text-slate-500 font-semibold tracking-wider uppercase mb-2">TOOLS</p>
                         <nav class="flex flex-col gap-1">
-                            <a href="{{ route('tasks.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl font-label-lg text-label-lg text-outline-variant dark:text-slate-400 hover:bg-surface-container-highest/10 dark:hover:bg-slate-800/60 hover:text-inverse-on-surface dark:hover:text-slate-100 transition-all">
-                                <span class="material-symbols-outlined text-[20px]">format_list_bulleted</span>
-                                <span>Semua Tugas</span>
+                            @php
+                                $statActive = request()->routeIs('statistics.index');
+                            @endphp
+                            <a href="{{ route('statistics.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-label-lg text-label-lg transition-all {{ $statActive ? 'bg-primary-container text-on-primary font-semibold shadow-sm' : 'text-outline-variant dark:text-slate-400 hover:bg-surface-container-highest/10 dark:hover:bg-slate-800/60 hover:text-inverse-on-surface dark:hover:text-slate-100' }}">
+                                <span class="material-symbols-outlined text-[20px]">bar_chart</span>
+                                <span>Statistik</span>
                             </a>
                         </nav>
                     </div>
@@ -141,15 +143,7 @@
                         </button>
                     </div>
 
-                    <div class="flex items-center gap-3 px-2 py-2">
-                        <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary">
-                            <span class="material-symbols-outlined text-[18px]">person</span>
-                        </div>
-                        <div class="flex flex-col min-w-0">
-                            <span class="font-label-md text-label-md font-semibold leading-tight truncate">{{ Auth::user()->name }}</span>
-                            <span class="font-label-sm text-label-sm text-tertiary dark:text-emerald-400 font-medium truncate">Mahasiswa Aktif</span>
-                        </div>
-                    </div>
+
                     <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl font-label-lg text-label-lg text-outline-variant dark:text-slate-400 hover:bg-surface-container-highest/10 dark:hover:bg-slate-800/60 hover:text-inverse-on-surface dark:hover:text-slate-100 transition-all">
                         <span class="material-symbols-outlined text-[20px]">person</span>
                         <span>Profil</span>
@@ -170,13 +164,7 @@
                     <span class="material-symbols-outlined text-[24px]">menu</span>
                 </button>
                 <a href="{{ route('dashboard') }}" class="font-headline-sm text-headline-sm font-bold text-primary">TasKuy</a>
-                <a href="{{ route('notifications.index') }}" class="relative p-2 text-on-surface-variant" aria-label="Notifikasi">
-                    <span class="material-symbols-outlined text-[24px]">notifications</span>
-                    @php $notifCount = auth()->user()->tasks()->where('status', '!=', 'done')->where('is_read', false)->count(); @endphp
-                    @if ($notifCount > 0)
-                        <span class="absolute top-1 right-1 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-on-error bg-error rounded-full">{{ $notifCount > 9 ? '9+' : $notifCount }}</span>
-                    @endif
-                </a>
+                <div class="w-10"></div>
             </div>
 
             <!-- Mobile drawer -->
@@ -199,17 +187,16 @@
             </aside>
 
             <!-- Main -->
-            <div class="lg:pl-[240px] min-h-screen pt-14 lg:pt-0">
-                <header class="hidden lg:flex fixed top-0 left-[240px] right-0 h-16 bg-surface-container-lowest dark:bg-[#0f172a] z-40 px-8 items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)] dark:shadow-none border-b border-outline-variant dark:border-slate-800">
+            <div class="lg:pl-[240px] min-h-screen pt-14 lg:pt-0" :class="!sidebarExpanded ? 'lg:!pl-0' : ''">
+                <header class="hidden lg:flex fixed top-0 left-[240px] right-0 h-16 bg-surface-container-lowest dark:bg-[#0f172a] z-40 px-8 items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)] dark:shadow-none border-b border-outline-variant dark:border-slate-800" :class="!sidebarExpanded ? 'lg:!left-0' : ''">
                     <div class="flex items-center gap-4 flex-1">
-                        <form method="GET" action="{{ route('tasks.index') }}" class="relative flex items-center w-72">
+                        <button @click="sidebarExpanded = !sidebarExpanded" class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors">
+                            <span class="material-symbols-outlined text-[24px]">menu</span>
+                        </button>
+                        <form method="GET" action="{{ route('tasks.index') }}" class="relative flex items-center w-72" x-data="{ query: '{{ request('q') }}' }">
                             <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">search</span>
-                            <input name="q" value="{{ request('q') }}" class="w-full h-10 pl-9 pr-4 rounded-xl bg-surface-container-low dark:bg-slate-800 text-on-surface placeholder:text-outline font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-primary-container transition-all border border-transparent focus:border-primary-container" placeholder="Cari tugas..." type="text">
+                            <input name="q" x-model="query" @input.debounce.300ms="$el.form.submit()" class="w-full h-10 pl-9 pr-4 rounded-xl bg-surface-container-low dark:bg-slate-800 text-on-surface placeholder:text-outline font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-primary-container transition-all border border-transparent focus:border-primary-container" placeholder="Cari tugas..." type="text">
                         </form>
-                        <a href="{{ route('tasks.create') }}" class="flex items-center gap-2 h-10 px-4 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg font-medium shadow-sm transition-all">
-                            <span class="material-symbols-outlined text-[18px]">add</span>
-                            <span>Buat Tugas</span>
-                        </a>
                     </div>
                     <div class="flex items-center gap-4">
                         <div x-data="{ open: false }" class="relative">
@@ -247,13 +234,45 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3 pl-2 border-l border-surface-container-high dark:border-slate-700">
-                            <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary">
-                                <span class="material-symbols-outlined text-[18px]">person</span>
-                            </div>
-                            <div class="flex flex-col text-left">
-                                <span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">{{ Auth::user()->name }}</span>
-                                <span class="font-label-sm text-label-sm text-tertiary dark:text-emerald-400 font-medium">Mahasiswa Aktif</span>
+                                <div x-data="{ profileOpen: false }" class="relative pl-2 border-l border-surface-container-high dark:border-slate-700">
+                            <button @click="profileOpen = !profileOpen" class="flex items-center gap-3 cursor-pointer focus:outline-none" aria-label="Profil Menu">
+                                @if (Auth::user()->avatar)
+                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
+                                @else
+                                    <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary">
+                                        <span class="material-symbols-outlined text-[18px]">person</span>
+                                    </div>
+                                @endif
+                                <div class="flex flex-col text-left">
+                                    <span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">{{ Auth::user()->name }}</span>
+                                </div>
+                            </button>
+
+                            <div x-show="profileOpen" @click.away="profileOpen = false" class="absolute right-0 mt-2 w-64 bg-surface-container-lowest rounded-2xl shadow-xl border border-surface-container-high z-50 p-4 flex flex-col items-center text-center gap-2" style="display:none;">
+                                <div class="flex flex-col items-center border-b border-surface-container-high pb-3 w-full">
+                                    @if (Auth::user()->avatar)
+                                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar" class="w-14 h-14 rounded-full object-cover mb-2 shadow-sm border-2 border-primary/20">
+                                    @else
+                                        <div class="w-14 h-14 rounded-full bg-primary-container flex items-center justify-center text-on-primary mb-2 shadow-sm">
+                                            <span class="material-symbols-outlined text-[28px]">person</span>
+                                        </div>
+                                    @endif
+                                    <span class="font-title-md text-title-md font-bold text-on-surface w-full break-words">{{ Auth::user()->name }}</span>
+                                    <span class="font-label-sm text-label-sm text-tertiary dark:text-emerald-400 font-medium">Mahasiswa Aktif</span>
+                                </div>
+                                <div class="flex flex-col gap-1 w-full text-left">
+                                    <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all">
+                                        <span class="material-symbols-outlined text-[18px]">person</span>
+                                        <span>Profil</span>
+                                    </a>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl font-label-md text-label-md text-error hover:bg-error-container/20 transition-all text-left">
+                                            <span class="material-symbols-outlined text-[18px]">logout</span>
+                                            <span>Keluar</span>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
