@@ -7,7 +7,7 @@
                 </div>
                 <h1 class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">Daftar Tugas</h1>
             </div>
-            <a href="{{ route('tasks.create') }}" class="flex items-center gap-2 h-10 px-4 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg font-medium shadow-sm transition-all">
+            <a href="{{ route('tasks.create') }}" class="flex items-center gap-2 h-10 px-4 rounded-xl bg-primary hover:bg-primary text-white font-label-lg text-label-lg font-medium shadow-sm transition-all">
                 <span class="material-symbols-outlined text-[18px]">add</span>
                 <span>Tambah Tugas</span>
             </a>
@@ -19,7 +19,7 @@
             <div class="text-center py-10">
                 <span class="material-symbols-outlined text-[48px] text-outline">task_alt</span>
                 <p class="mt-3 font-body-md text-body-md text-on-surface-variant">Belum ada tugas.</p>
-                <a href="{{ route('tasks.create') }}" class="mt-4 inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg font-medium shadow-sm transition-all">
+                <a href="{{ route('tasks.create') }}" class="mt-4 inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-primary hover:bg-primary text-white font-label-lg text-label-lg font-medium shadow-sm transition-all">
                     <span class="material-symbols-outlined text-[18px]">add</span>
                     <span>Tambah sekarang</span>
                 </a>
@@ -55,7 +55,7 @@
                                 </td>
                                 <td class="py-3.5 px-4">
                                     <span class="px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-medium flex items-center gap-1.5 w-fit">
-                                        <span class="w-2 h-2 rounded-full bg-primary-container"></span>
+                                        <span class="w-2 h-2 rounded-full bg-primary"></span>
                                         {{ $task->status->label() }}
                                     </span>
                                 </td>

@@ -71,9 +71,21 @@
                 --color-primary-container: {{ $themePrimaryContainer }};
             }
         </style>
-        <div x-data="{ sidebarOpen: false, sidebarExpanded: true }" class="min-h-screen">
+        <div x-data="{ sidebarOpen: false, sidebarExpanded: true, confirmLogout: false }" class="min-h-screen">
+            <div x-show="confirmLogout" class="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-3xs" style="display:none;" x-cloak>
+                <div class="bg-white dark:bg-[#111729] p-3 rounded-2xl shadow-xl w-56 border border-gray-200 dark:border-slate-800 text-center flex flex-col items-center">
+                    <p class="text-xs font-bold text-gray-900 dark:text-slate-100 mb-6">Anda yakin ingin keluar?</p>
+                    <div class="flex gap-2 justify-center">
+                        <button type="button" @click="confirmLogout = false" class="w-24 px-3 py-1.5 rounded-xl border border-gray-300 dark:border-slate-700 text-xs font-semibold text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">No</button>
+                        <form method="POST" action="{{ route('logout') }}" class="w-24">
+                            @csrf
+                            <button type="submit" class="w-full px-3 py-1.5 rounded-xl bg-red-600 text-white text-xs font-semibold hover:bg-red-700 transition-colors">Yes</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
             <!-- Sidebar (desktop) -->
-            <aside x-show="sidebarExpanded" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" class="fixed left-0 top-0 h-full w-[240px] bg-inverse-surface dark:bg-[#0a0c16] text-inverse-on-surface dark:text-slate-200 z-50 flex flex-col justify-between overflow-y-auto px-4 py-5 border-r border-outline-variant dark:border-slate-800">
+            <aside x-show="sidebarExpanded" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" class="fixed left-0 top-0 h-full w-[240px] bg-inverse-surface dark:bg-[#0a0c16] text-inverse-on-surface dark:text-slate-200 z-50 flex flex-col justify-between overflow-y-auto px-4 py-5 border-none dark:border-r dark:border-slate-800">
                 <div class="flex flex-col gap-5">
                     <div class="flex items-center gap-3 px-2">
                         <div class="w-9 h-9 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
@@ -101,7 +113,7 @@
                             @endphp
                             <a href="{{ route($item['route']) }}"
                                class="flex items-center justify-between px-3 py-2.5 rounded-xl font-label-lg text-label-lg transition-all
-                                      {{ $active ? 'bg-primary-container text-on-primary font-semibold shadow-sm' : 'text-outline-variant dark:text-slate-400 hover:bg-surface-container-highest/10 dark:hover:bg-slate-800/60 hover:text-inverse-on-surface dark:hover:text-slate-100' }}">
+                                      {{ $active ? 'bg-primary text-white font-semibold shadow-sm' : 'text-outline-variant dark:text-slate-400 hover:bg-surface-container-highest/10 dark:hover:bg-slate-800/60 hover:text-inverse-on-surface dark:hover:text-slate-100' }}">
                                 <div class="flex items-center gap-3">
                                     <span class="material-symbols-outlined text-[20px]">{{ $item['icon'] }}</span>
                                     <span>{{ $item['label'] }}</span>
@@ -122,7 +134,7 @@
                             @php
                                 $statActive = request()->routeIs('statistics.index');
                             @endphp
-                            <a href="{{ route('statistics.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-label-lg text-label-lg transition-all {{ $statActive ? 'bg-primary-container text-on-primary font-semibold shadow-sm' : 'text-outline-variant dark:text-slate-400 hover:bg-surface-container-highest/10 dark:hover:bg-slate-800/60 hover:text-inverse-on-surface dark:hover:text-slate-100' }}">
+                            <a href="{{ route('statistics.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-label-lg text-label-lg transition-all {{ $statActive ? 'bg-primary text-white font-semibold shadow-sm' : 'text-outline-variant dark:text-slate-400 hover:bg-surface-container-highest/10 dark:hover:bg-slate-800/60 hover:text-inverse-on-surface dark:hover:text-slate-100' }}">
                                 <span class="material-symbols-outlined text-[20px]">bar_chart</span>
                                 <span>Statistik</span>
                             </a>
@@ -148,13 +160,10 @@
                         <span class="material-symbols-outlined text-[20px]">person</span>
                         <span>Profil</span>
                     </a>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl font-label-lg text-label-lg text-outline-variant dark:text-slate-400 hover:bg-surface-container-highest/10 dark:hover:bg-slate-800/60 hover:text-inverse-on-surface dark:hover:text-slate-100 transition-all">
-                            <span class="material-symbols-outlined text-[20px]">logout</span>
-                            <span>Keluar</span>
-                        </button>
-                    </form>
+                    <button type="button" @click="confirmLogout = true" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl font-label-lg text-label-lg text-outline-variant dark:text-slate-400 hover:bg-surface-container-highest/10 dark:hover:bg-slate-800/60 hover:text-inverse-on-surface dark:hover:text-slate-100 transition-all text-left">
+                        <span class="material-symbols-outlined text-[20px]">logout</span>
+                        <span>Keluar</span>
+                    </button>
                 </div>
             </aside>
 
@@ -188,23 +197,23 @@
 
             <!-- Main -->
             <div class="lg:pl-[240px] min-h-screen pt-14 lg:pt-0" :class="!sidebarExpanded ? 'lg:!pl-0' : ''">
-                <header class="hidden lg:flex fixed top-0 left-[240px] right-0 h-16 bg-surface-container-lowest dark:bg-[#0f172a] z-40 px-8 items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)] dark:shadow-none border-b border-outline-variant dark:border-slate-800" :class="!sidebarExpanded ? 'lg:!left-0' : ''">
+                <header class="hidden lg:flex fixed top-0 left-[240px] right-0 h-16 bg-primary dark:bg-primary text-white z-40 px-8 items-center justify-between shadow-sm dark:shadow-none border-b-0" :class="!sidebarExpanded ? 'lg:!left-0' : ''">
                     <div class="flex items-center gap-4 flex-1">
-                        <button @click="sidebarExpanded = !sidebarExpanded" class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors">
+                        <button @click="sidebarExpanded = !sidebarExpanded" class="p-2 text-white dark:text-slate-300 hover:bg-white/10 rounded-lg transition-colors">
                             <span class="material-symbols-outlined text-[24px]">menu</span>
                         </button>
                         <form method="GET" action="{{ route('tasks.index') }}" class="relative flex items-center w-72" x-data="{ query: '{{ request('q') }}' }">
-                            <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">search</span>
-                            <input name="q" x-model="query" @input.debounce.300ms="$el.form.submit()" class="w-full h-10 pl-9 pr-4 rounded-xl bg-surface-container-low dark:bg-slate-800 text-on-surface placeholder:text-outline font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-primary-container transition-all border border-transparent focus:border-primary-container" placeholder="Cari tugas..." type="text">
+                            <span class="material-symbols-outlined absolute left-3 text-white/70 dark:text-outline text-[18px]">search</span>
+                            <input name="q" x-model="query" @input.debounce.300ms="$el.form.submit()" class="w-full h-10 pl-9 pr-4 rounded-xl bg-white/10 dark:bg-slate-800 text-white dark:text-on-surface placeholder:text-white/60 dark:placeholder:text-outline font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-white dark:focus:ring-[color:var(--color-primary-container)] transition-all border border-transparent focus:border-white" placeholder="Cari tugas..." type="text">
                         </form>
                     </div>
                     <div class="flex items-center gap-4">
                         <div x-data="{ open: false }" class="relative">
-                            <button @click="open = !open" class="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-slate-800 hover:text-on-surface transition-colors" aria-label="Notifikasi">
+                            <button @click="open = !open" class="relative p-2 rounded-xl text-white/80 dark:text-on-surface-variant hover:bg-white/10 dark:hover:bg-slate-800 hover:text-white dark:hover:text-on-surface transition-colors" aria-label="Notifikasi">
                                 <span class="material-symbols-outlined text-[20px]">notifications</span>
                                 @php $unreadCount = auth()->user()->tasks()->where('status', '!=', 'done')->where('is_read', false)->count(); @endphp
                                 @if ($unreadCount > 0)
-                                    <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-error"></span>
+                                    <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-white dark:bg-error"></span>
                                 @endif
                             </button>
 
@@ -234,17 +243,17 @@
                                 </div>
                             </div>
                         </div>
-                                <div x-data="{ profileOpen: false }" class="relative pl-2 border-l border-surface-container-high dark:border-slate-700">
+                                <div x-data="{ profileOpen: false }" class="relative pl-2 border-l border-white/20 dark:border-slate-700">
                             <button @click="profileOpen = !profileOpen" class="flex items-center gap-3 cursor-pointer focus:outline-none" aria-label="Profil Menu">
                                 @if (Auth::user()->avatar)
                                     <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
                                 @else
-                                    <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary">
+                                    <div class="w-8 h-8 rounded-full bg-white/20 dark:bg-primary-container flex items-center justify-center text-white dark:text-on-primary">
                                         <span class="material-symbols-outlined text-[18px]">person</span>
                                     </div>
                                 @endif
                                 <div class="flex flex-col text-left">
-                                    <span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">{{ Auth::user()->name }}</span>
+                                    <span class="font-label-md text-label-md text-white dark:text-on-surface font-semibold leading-tight">{{ Auth::user()->name }}</span>
                                 </div>
                             </button>
 
