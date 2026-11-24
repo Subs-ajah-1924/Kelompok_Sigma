@@ -31,7 +31,8 @@
                     $dateStr = $day->format('Y-m-d');
                     $holiday = $holidays[$dateStr] ?? null;
                     $dayTasks = $tasks->get($dateStr, collect());
-                    $hasDetail = $holiday || $dayTasks->count() > 0;
+                    $dayAgendas = $agendas->get($dateStr, collect());
+                    $hasDetail = $holiday || $dayTasks->count() > 0 || $dayAgendas->count() > 0;
                     
                     $itemList = [];
                     if ($holiday) {
@@ -39,6 +40,9 @@
                     }
                     foreach ($dayTasks as $t) {
                         $itemList[] = '📚 ' . $t->title . ($t->course && $t->course->name ? ' (' . $t->course->name . ')' : '');
+                    }
+                    foreach ($dayAgendas as $a) {
+                        $itemList[] = '📌 ' . $a->title . ' (' . substr($a->start_time, 0, 5) . '-' . substr($a->end_time, 0, 5) . ')';
                     }
                 @endphp
                 <div class="relative rounded-xl bg-surface-container-low/40 dark:bg-slate-800/40 border border-surface-container-high dark:border-slate-700 p-2 min-h-[100px] flex flex-col justify-between {{ $day->isToday() ? 'ring-2 ring-primary-container' : '' }}">
@@ -56,6 +60,9 @@
                         @endif
                         @foreach ($dayTasks as $task)
                             <div class="text-xs bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 rounded-md px-1.5 py-0.5 mt-1 truncate" title="{{ $task->title }}">{{ $task->title }}</div>
+                        @endforeach
+                        @foreach ($dayAgendas as $agenda)
+                            <div class="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-md px-1.5 py-0.5 mt-1 truncate" title="{{ $agenda->title }}">{{ $agenda->title }}</div>
                         @endforeach
                     </div>
 
