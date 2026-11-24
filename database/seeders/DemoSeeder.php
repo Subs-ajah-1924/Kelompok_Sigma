@@ -14,19 +14,30 @@ class DemoSeeder extends Seeder
 {
     public function run(): void
     {
-        // User 1 (matches README)
-        $user1 = User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => bcrypt('password'),
-        ]);
+        $user1 = User::updateOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+                'password' => bcrypt('password'),
+            ]
+        );
+
+        $user1->tasks()->forceDelete();
+        $user1->courses()->forceDelete();
+        $user1->agendas()->forceDelete();
 
         // User 2 (for isolation testing)
-        $user2 = User::factory()->create([
-            'name' => 'Demo User 2',
-            'email' => 'demo2@example.com',
-            'password' => bcrypt('password'),
-        ]);
+        $user2 = User::updateOrCreate(
+            ['email' => 'demo2@example.com'],
+            [
+                'name' => 'Demo User 2',
+                'password' => bcrypt('password'),
+            ]
+        );
+
+        $user2->tasks()->forceDelete();
+        $user2->courses()->forceDelete();
+        $user2->agendas()->forceDelete();
 
         // Courses for user 1
         $courses1 = collect([
