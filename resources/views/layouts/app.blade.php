@@ -71,7 +71,19 @@
                 --color-primary-container: {{ $themePrimaryContainer }};
             }
         </style>
-        <div x-data="{ sidebarOpen: false, sidebarExpanded: true }" class="min-h-screen">
+        <div x-data="{ sidebarOpen: false, sidebarExpanded: true, confirmLogout: false }" class="min-h-screen">
+            <div x-show="confirmLogout" class="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-3xs" style="display:none;" x-cloak>
+                <div class="bg-white dark:bg-[#111729] p-3 rounded-2xl shadow-xl w-56 border border-gray-200 dark:border-slate-800 text-center flex flex-col items-center">
+                    <p class="text-xs font-bold text-gray-900 dark:text-slate-100 mb-6">Anda yakin ingin keluar?</p>
+                    <div class="flex gap-2 justify-center">
+                        <button type="button" @click="confirmLogout = false" class="w-24 px-3 py-1.5 rounded-xl border border-gray-300 dark:border-slate-700 text-xs font-semibold text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">No</button>
+                        <form method="POST" action="{{ route('logout') }}" class="w-24">
+                            @csrf
+                            <button type="submit" class="w-full px-3 py-1.5 rounded-xl bg-red-600 text-white text-xs font-semibold hover:bg-red-700 transition-colors">Yes</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
             <!-- Sidebar (desktop) -->
             <aside x-show="sidebarExpanded" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" class="fixed left-0 top-0 h-full w-[240px] bg-inverse-surface dark:bg-[#0a0c16] text-inverse-on-surface dark:text-slate-200 z-50 flex flex-col justify-between overflow-y-auto px-4 py-5 border-r border-outline-variant dark:border-slate-800">
                 <div class="flex flex-col gap-5">
@@ -148,13 +160,10 @@
                         <span class="material-symbols-outlined text-[20px]">person</span>
                         <span>Profil</span>
                     </a>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl font-label-lg text-label-lg text-outline-variant dark:text-slate-400 hover:bg-surface-container-highest/10 dark:hover:bg-slate-800/60 hover:text-inverse-on-surface dark:hover:text-slate-100 transition-all">
-                            <span class="material-symbols-outlined text-[20px]">logout</span>
-                            <span>Keluar</span>
-                        </button>
-                    </form>
+                    <button type="button" @click="confirmLogout = true" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl font-label-lg text-label-lg text-outline-variant dark:text-slate-400 hover:bg-surface-container-highest/10 dark:hover:bg-slate-800/60 hover:text-inverse-on-surface dark:hover:text-slate-100 transition-all text-left">
+                        <span class="material-symbols-outlined text-[20px]">logout</span>
+                        <span>Keluar</span>
+                    </button>
                 </div>
             </aside>
 
