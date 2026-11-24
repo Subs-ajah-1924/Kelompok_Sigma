@@ -42,6 +42,52 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_login_rejects_unknown_email_with_generic_message(): void
+    {
+        $user = User::factory()->create();
+
+        $unknownEmail = $this->post('/login', [
+            'email' => 'tidak-ada@example.com',
+            'password' => 'password',
+        ]);
+
+        $wrongPassword = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'wrong-password',
+        ]);
+
+        $unknownEmail->assertSessionHasErrors('email');
+        $wrongPassword->assertSessionHasErrors('email');
+
+        $unknownMessage = $unknownEmail->getSession()->get('errors')->first('email');
+        $wrongPasswordMessage = $wrongPassword->getSession()->get('errors')->first('email');
+
+        $this->assertSame($unknownMessage, $wrongPasswordMessage);
+        $this->assertSame('Email atau password salah.', $unknownMessage);
+    }
+
+    public function test_unknown_email_attempts_are_rate_limited(): void
+    {
+        for ($i = 0; $i < 5; $i++) {
+            $this->post('/login', [
+                'email' => 'tidak-ada@example.com',
+                'password' => 'password',
+            ])->assertSessionHasErrors('email');
+        }
+
+        $response = $this->post('/login', [
+            'email' => 'tidak-ada@example.com',
+            'password' => 'password',
+        ]);
+
+        $response->assertSessionHasErrors('email');
+        $this->assertStringContainsString(
+            'Too many login attempts',
+            $response->getSession()->get('errors')->first('email')
+        );
+        $this->assertGuest();
+    }
+
     public function test_users_can_logout(): void
     {
         $user = User::factory()->create();
