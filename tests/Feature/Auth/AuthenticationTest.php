@@ -42,6 +42,46 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_login_does_not_reveal_whether_email_is_registered(): void
+    {
+        $user = User::factory()->create();
+
+        $wrongPassword = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'wrong-password',
+        ]);
+
+        $unknownEmail = $this->post('/login', [
+            'email' => 'tidak-terdaftar@example.com',
+            'password' => 'wrong-password',
+        ]);
+
+        $wrongPassword->assertSessionHasErrors(['email' => 'Email atau password salah.']);
+        $unknownEmail->assertSessionHasErrors(['email' => 'Email atau password salah.']);
+        $this->assertGuest();
+    }
+
+    public function test_unknown_email_attempts_are_rate_limited(): void
+    {
+        for ($attempt = 1; $attempt <= 5; $attempt++) {
+            $this->post('/login', [
+                'email' => 'tidak-terdaftar@example.com',
+                'password' => 'wrong-password',
+            ])->assertSessionHasErrors(['email' => 'Email atau password salah.']);
+        }
+
+        $response = $this->post('/login', [
+            'email' => 'tidak-terdaftar@example.com',
+            'password' => 'wrong-password',
+        ]);
+
+        $response->assertSessionHasErrors('email');
+        $this->assertStringContainsString(
+            'Too many login attempts',
+            session('errors')->first('email')
+        );
+    }
+
     public function test_users_can_logout(): void
     {
         $user = User::factory()->create();
