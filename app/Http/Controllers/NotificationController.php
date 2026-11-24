@@ -15,6 +15,7 @@ class NotificationController extends Controller
             ->with('course')
             ->where('status', '!=', 'done')
             ->orderBy('deadline')
+            ->limit(100)
             ->get();
 
         $overdue = $tasks->filter(fn ($t) => $t->deadline->lt($now->copy()->startOfDay()));
