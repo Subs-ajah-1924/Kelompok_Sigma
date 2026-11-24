@@ -15,7 +15,7 @@ class DashboardController extends Controller
         $todoCount = $user->tasks()->where('status', 'todo')->count();
         $inProgressCount = $user->tasks()->where('status', 'in_progress')->count();
         $doneCount = $user->tasks()->where('status', 'done')->count();
-        $overdueCount = $user->tasks()->where('status', '!=', 'done')->where('deadline', '<', now())->count();
+        $overdueCount = $user->tasks()->where('status', '!=', 'done')->where('deadline', '<', now()->startOfDay())->count();
 
         $upcomingTasks = $user->tasks()
             ->with('course')
