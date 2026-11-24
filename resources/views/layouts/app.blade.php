@@ -85,7 +85,7 @@
                 </div>
             </div>
             <!-- Sidebar (desktop) -->
-            <aside x-show="sidebarExpanded" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" class="fixed left-0 top-0 h-full w-[240px] bg-inverse-surface dark:bg-[#0a0c16] text-inverse-on-surface dark:text-slate-200 z-50 flex flex-col justify-between overflow-y-auto px-4 py-5 border-r border-outline-variant dark:border-slate-800">
+            <aside x-show="sidebarExpanded" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" class="fixed left-0 top-0 h-full w-[240px] bg-inverse-surface dark:bg-[#0a0c16] text-inverse-on-surface dark:text-slate-200 z-50 flex flex-col justify-between overflow-y-auto px-4 py-5 border-none dark:border-r dark:border-slate-800">
                 <div class="flex flex-col gap-5">
                     <div class="flex items-center gap-3 px-2">
                         <div class="w-9 h-9 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
