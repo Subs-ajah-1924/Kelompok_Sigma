@@ -43,22 +43,55 @@
                                 <td class="py-3.5 px-4 font-semibold text-on-surface">
                                     <a href="{{ route('tasks.show', $task) }}" class="group-hover:text-primary transition-colors">{{ $task->title }}</a>
                                 </td>
-                                <td class="py-3.5 px-4">
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary-fixed text-primary font-label-sm text-label-sm font-medium">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                                        {{ $task->course->name ?? 'Tanpa mata kuliah' }}
-                                    </span>
-                                </td>
+                                 <td class="py-3.5 px-4">
+                                     @if ($task->course)
+                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-label-sm text-label-sm font-medium" style="background-color: {{ $task->course->color ?? '#4F46E5' }}20; color: {{ $task->course->color ?? '#4F46E5' }}">
+                                             <span class="w-1.5 h-1.5 rounded-full" style="background-color: {{ $task->course->color ?? '#4F46E5' }}"></span>
+                                             {{ $task->course->name }}
+                                         </span>
+                                     @else
+                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-medium">
+                                             Tanpa mata kuliah
+                                         </span>
+                                     @endif
+                                 </td>
                                 <td class="py-3.5 px-4 text-on-surface-variant font-label-md text-label-md">{{ $task->deadline->format('d M Y, H:i') }}</td>
                                 <td class="py-3.5 px-4">
-                                    <span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold">{{ $task->difficulty->label() }}</span>
+                                     @php
+                                         $difficultyClass = match ($task->difficulty->value) {
+                                             'mudah' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+                                             'sedang' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+                                             'sulit' => 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+                                         };
+                                     @endphp
+                                     <span class="px-2.5 py-1 rounded-full {{ $difficultyClass }} font-label-sm text-label-sm font-semibold">{{ $task->difficulty->label() }}</span>
                                 </td>
-                                <td class="py-3.5 px-4">
-                                    <span class="px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-medium flex items-center gap-1.5 w-fit">
-                                        <span class="w-2 h-2 rounded-full bg-primary"></span>
-                                        {{ $task->status->label() }}
-                                    </span>
-                                </td>
+                                 <td class="py-3.5 px-4">
+                                     @php
+                                         $statusClass = match ($task->status->value) {
+                                             'todo' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+                                             'in_progress' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+                                             'done' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+                                         };
+                                     @endphp
+                                     @if ($task->status->value === 'done')
+                                         <span class="px-2.5 py-1 rounded-full {{ $statusClass }} font-label-sm text-label-sm font-medium flex items-center gap-1.5 w-fit">
+                                             <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                                             {{ $task->status->label() }}
+                                         </span>
+                                     @else
+                                         <form method="POST" action="{{ route('tasks.status', $task) }}" class="inline-flex">
+                                             @csrf
+                                             @method('PATCH')
+                                             <label class="sr-only" for="task-status-{{ $task->id }}">Ubah status {{ $task->title }}</label>
+                                             <select id="task-status-{{ $task->id }}" name="status" onchange="this.form.submit()" class="appearance-none cursor-pointer rounded-full border-0 {{ $statusClass }} py-1 pl-2.5 pr-7 font-label-sm text-label-sm font-medium focus:ring-2 focus:ring-primary-container">
+                                                 <option value="todo" {{ $task->status->value === 'todo' ? 'selected' : '' }}>To Do</option>
+                                                 <option value="in_progress" {{ $task->status->value === 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                                                 <option value="done">Done</option>
+                                             </select>
+                                         </form>
+                                     @endif
+                                 </td>
                                 <td class="py-3.5 px-4 text-right">
                                     <a href="{{ route('tasks.edit', $task) }}" class="p-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container transition-colors inline-block" aria-label="Edit">
                                         <span class="material-symbols-outlined text-[18px]">edit</span>
