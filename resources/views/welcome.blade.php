@@ -74,7 +74,7 @@
     <header class="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between animate-fade-down relative z-10">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-2xl overflow-hidden shadow-md shadow-indigo-500/20 flex-shrink-0 bg-indigo-600 logo-float">
-                <img src="{{ asset('images/logo.webp') }}" alt="TasKuy Logo" class="w-full h-full object-cover">
+                <img src="{{ asset('images/logo-small.webp') }}" alt="TasKuy Logo" class="w-full h-full object-cover">
             </div>
             <span class="font-bold text-xl tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">TasKuy</span>
         </div>

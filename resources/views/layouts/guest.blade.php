@@ -13,27 +13,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
 
-        <script>
-            (function () {
-                var dark = false;
-                try {
-                    dark = localStorage.getItem('theme') === 'dark';
-                } catch (e) {}
-                document.documentElement.classList.toggle('dark', dark);
-                document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
-                function markFontsLoaded() {
-                    document.documentElement.classList.add('fonts-loaded');
-                }
-                if (document.fonts && typeof document.fonts.check === 'function' && document.fonts.check('24px "Material Symbols Outlined"')) {
-                    markFontsLoaded();
-                } else if (document.fonts && typeof document.fonts.ready !== 'undefined') {
-                    document.fonts.ready.then(markFontsLoaded);
-                    setTimeout(markFontsLoaded, 3000);
-                } else {
-                    markFontsLoaded();
-                }
-            })();
-        </script>
+        @include('partials.theme-bootstrap')
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
@@ -41,7 +21,7 @@
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
             <div class="mb-6 flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
-                    <img src="{{ asset('images/logo.webp') }}" alt="TasKuy Logo" class="w-full h-full object-cover">
+                    <img src="{{ asset('images/logo-small.webp') }}" alt="TasKuy Logo" class="w-full h-full object-cover">
                 </div>
                 <span class="font-headline-sm text-headline-sm font-bold text-on-surface">TasKuy</span>
             </div>

@@ -7,27 +7,9 @@
 
         <title>{{ config('app.name', 'TasKuy') }}</title>
 
-        <script>
-            (function () {
-                var dark = false;
-                try {
-                    dark = localStorage.getItem('theme') === 'dark';
-                } catch (e) {}
-                document.documentElement.classList.toggle('dark', dark);
-                document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
-                function markFontsLoaded() {
-                    document.documentElement.classList.add('fonts-loaded');
-                }
-                if (document.fonts && typeof document.fonts.check === 'function' && document.fonts.check('24px "Material Symbols Outlined"')) {
-                    markFontsLoaded();
-                } else if (document.fonts && typeof document.fonts.ready !== 'undefined') {
-                    document.fonts.ready.then(markFontsLoaded);
-                    setTimeout(markFontsLoaded, 3000);
-                } else {
-                    markFontsLoaded();
-                }
-            })();
+        @include('partials.theme-bootstrap')
 
+        <script>
             function setTheme(mode) {
                 var dark = mode === 'dark';
                 document.documentElement.classList.toggle('dark', dark);
@@ -89,7 +71,7 @@
                 <div class="flex flex-col gap-5">
                     <div class="flex items-center gap-3 px-2 h-16">
                         <div class="w-10 h-10 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
-                            <img src="{{ asset('images/logo.webp') }}" alt="TasKuy Logo" class="w-full h-full object-cover">
+                            <img src="{{ asset('images/logo-small.webp') }}" alt="TasKuy Logo" class="w-full h-full object-cover">
                         </div>
                         <div class="flex flex-col">
                             <span class="font-headline-md text-headline-md tracking-tight font-bold">TasKuy</span>
@@ -117,12 +99,7 @@
                                     <span class="material-symbols-outlined text-[20px]">{{ $item['icon'] }}</span>
                                     <span>{{ $item['label'] }}</span>
                                 </div>
-                                @if ($item['route'] === 'notifications.index')
-                                    @php $badge = $unreadCount; @endphp
-                                    @if ($badge > 0)
-                                        <span class="px-2 py-0.5 rounded-full bg-error text-on-error font-label-sm text-label-sm font-semibold">{{ $badge > 9 ? '9+' : $badge }}</span>
-                                    @endif
-                                @endif
+
                             </a>
                         @endforeach
                     </nav>
@@ -207,14 +184,10 @@
                         </form>
                     </div>
                     <div class="flex items-center gap-4">
-                @php
-                    $unreadCount = auth()->user()->tasks()->where('status', '!=', 'done')->where('is_read', false)->count();
-                    $newTasks = auth()->user()->tasks()->with('course')->where('status', '!=', 'done')->where('is_read', false)->latest()->limit(5)->get();
-                @endphp
                         <div x-data="{ open: false }" class="relative">
                             <button @click="open = !open" class="relative p-2 rounded-xl text-white/80 dark:text-on-surface-variant hover:bg-white/10 dark:hover:bg-slate-800 hover:text-white dark:hover:text-on-surface transition-colors" aria-label="Notifikasi">
                                 <span class="material-symbols-outlined text-[20px]">notifications</span>
-                                @php $hc = $unreadCount; @endphp
+                                @php $hc = auth()->user()->tasks()->where('status', '!=', 'done')->where('is_read', false)->count(); @endphp
                                 @if ($hc > 0)
                                     <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-white dark:bg-error"></span>
                                 @endif
@@ -223,6 +196,7 @@
                             <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-80 bg-surface-container-lowest rounded-2xl shadow-xl border border-surface-container-high z-50 p-4 max-h-[380px] overflow-y-auto" style="display:none;">
                                 <h3 class="font-title-lg text-title-lg text-on-surface mb-3">Tugas Baru</h3>
                                 <div class="flex flex-col gap-2.5">
+                                    @php $newTasks = auth()->user()->tasks()->with('course')->where('status', '!=', 'done')->where('is_read', false)->latest()->limit(5)->get(); @endphp
                                     @forelse ($newTasks as $task)
                                         <form method="POST" action="{{ route('tasks.markAsRead', $task) }}" class="block">
                                             @csrf
