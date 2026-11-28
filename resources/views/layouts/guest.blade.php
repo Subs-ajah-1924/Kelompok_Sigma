@@ -18,7 +18,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased bg-background text-on-surface">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
+        <div class="min-h-screen flex flex-col justify-center items-center px-4 py-8">
             <div class="mb-6 flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
                     <img src="{{ asset('images/logo-small.webp') }}" alt="TasKuy Logo" class="w-full h-full object-cover">
