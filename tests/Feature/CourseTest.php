@@ -213,4 +213,35 @@ class CourseTest extends TestCase
         $response->assertOk();
         $response->assertSee('3 tugas');
     }
+
+    public function test_course_schedule_is_merged_on_server(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post(route('courses.store'), [
+            'name' => 'Pemrograman Web',
+            'start_time' => '09:00',
+            'end_time' => '10:30',
+        ]);
+
+        $response->assertRedirect(route('courses.index'));
+        $this->assertDatabaseHas('courses', [
+            'user_id' => $user->id,
+            'name' => 'Pemrograman Web',
+            'time' => '09:00 - 10:30',
+        ]);
+    }
+
+    public function test_course_rejects_invalid_schedule(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post(route('courses.store'), [
+            'name' => 'Pemrograman Web',
+            'start_time' => '10:30',
+            'end_time' => '09:00',
+        ]);
+
+        $response->assertSessionHasErrors('end_time');
+    }
 }

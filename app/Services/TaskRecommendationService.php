@@ -18,7 +18,7 @@ class TaskRecommendationService
 
         $now = now();
         $deadline = $task->deadline;
-        $isOverdue = $deadline->lt($now);
+        $isOverdue = $deadline->lt($now->copy()->startOfDay());
         $days = (int) $now->copy()->startOfDay()
             ->diffInDays($deadline->copy()->startOfDay(), false);
 

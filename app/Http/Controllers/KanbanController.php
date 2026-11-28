@@ -9,7 +9,7 @@ class KanbanController extends Controller
 {
     public function index(): View
     {
-        $tasks = auth()->user()->tasks()->with('course')->get();
+        $tasks = auth()->user()->tasks()->with('course')->limit(100)->get();
 
         $columns = [
             'todo' => $tasks->where('status.value', 'todo')->values(),
