@@ -7,27 +7,9 @@
 
         <title>{{ config('app.name', 'TasKuy') }}</title>
 
-        <script>
-            (function () {
-                var dark = false;
-                try {
-                    dark = localStorage.getItem('theme') === 'dark';
-                } catch (e) {}
-                document.documentElement.classList.toggle('dark', dark);
-                document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
-                function markFontsLoaded() {
-                    document.documentElement.classList.add('fonts-loaded');
-                }
-                if (document.fonts && typeof document.fonts.check === 'function' && document.fonts.check('24px "Material Symbols Outlined"')) {
-                    markFontsLoaded();
-                } else if (document.fonts && typeof document.fonts.ready !== 'undefined') {
-                    document.fonts.ready.then(markFontsLoaded);
-                    setTimeout(markFontsLoaded, 3000);
-                } else {
-                    markFontsLoaded();
-                }
-            })();
+        @include('partials.theme-bootstrap')
 
+        <script>
             function setTheme(mode) {
                 var dark = mode === 'dark';
                 document.documentElement.classList.toggle('dark', dark);
@@ -89,7 +71,7 @@
                 <div class="flex flex-col gap-5">
                     <div class="flex items-center gap-3 px-2 h-16">
                         <div class="w-10 h-10 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
-                            <img src="{{ asset('images/logo.webp') }}" alt="TasKuy Logo" class="w-full h-full object-cover">
+                            <img src="{{ asset('images/logo-small.webp') }}" alt="TasKuy Logo" class="w-full h-full object-cover">
                         </div>
                         <div class="flex flex-col">
                             <span class="font-headline-md text-headline-md tracking-tight font-bold">TasKuy</span>
@@ -117,12 +99,7 @@
                                     <span class="material-symbols-outlined text-[20px]">{{ $item['icon'] }}</span>
                                     <span>{{ $item['label'] }}</span>
                                 </div>
-                                @if ($item['route'] === 'notifications.index')
-                                    @php $badge = auth()->user()->tasks()->where('status', '!=', 'done')->where('is_read', false)->count(); @endphp
-                                    @if ($badge > 0)
-                                        <span class="px-2 py-0.5 rounded-full bg-error text-on-error font-label-sm text-label-sm font-semibold">{{ $badge > 9 ? '9+' : $badge }}</span>
-                                    @endif
-                                @endif
+
                             </a>
                         @endforeach
                     </nav>

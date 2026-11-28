@@ -29,7 +29,7 @@
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-label-md text-label-md text-on-surface-variant font-medium">Jam Kuliah</label>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2" data-time-fields>
                         <input type="time" name="start_time" class="h-11 px-3 rounded-lg bg-surface-container-low text-on-surface border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container font-body-md text-body-md">
                         <span class="text-on-surface-variant font-medium">s/d</span>
                         <input type="time" name="end_time" class="h-11 px-3 rounded-lg bg-surface-container-low text-on-surface border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container font-body-md text-body-md">
@@ -37,35 +37,6 @@
                     </div>
                     @error('time') <p class="font-body-sm text-body-sm text-error">{{ $message }}</p> @enderror
                 </div>
-                <script>
-                    document.addEventListener('DOMContentLoaded', () => {
-                        const startInput = document.querySelector('input[name="start_time"]');
-                        const endInput = document.querySelector('input[name="end_time"]');
-                        const combinedInput = document.getElementById('time_combined');
-
-                        const existingVal = combinedInput.value;
-                        if (existingVal && existingVal.includes('-')) {
-                            const parts = existingVal.split('-').map(s => s.trim());
-                            if (parts[0]) startInput.value = parts[0];
-                            if (parts[1]) endInput.value = parts[1];
-                        } else if (existingVal) {
-                            startInput.value = existingVal.trim();
-                        }
-
-                        function updateTime() {
-                            if (startInput.value && endInput.value) {
-                                combinedInput.value = startInput.value + ' - ' + endInput.value;
-                            } else if (startInput.value) {
-                                combinedInput.value = startInput.value;
-                            } else {
-                                combinedInput.value = '';
-                            }
-                        }
-
-                        startInput.addEventListener('change', updateTime);
-                        endInput.addEventListener('change', updateTime);
-                    });
-                </script>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
