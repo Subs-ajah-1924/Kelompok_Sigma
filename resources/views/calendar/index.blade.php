@@ -19,8 +19,25 @@
         </div>
     </x-slot>
 
-    <div x-data="{ activeDate: null, activeItems: [], activeTitle: '' }" class="rounded-2xl bg-surface-container-lowest p-6 border border-surface-container-high shadow-xs relative">
-        <div class="grid grid-cols-7 gap-2 mb-2">
+    <div x-data="{ activeDate: null, activeItems: [], activeTitle: '' }" class="relative isolate overflow-visible rounded-3xl border-2 border-primary/20 bg-transparent shadow-2xl shadow-primary/10">
+        <div class="pointer-events-none absolute inset-0 -z-10 rounded-3xl bg-gradient-to-br from-indigo-50 via-white to-violet-100 dark:from-surface-container-lowest dark:via-surface-container-low dark:to-primary/20"></div>
+        <div class="pointer-events-none absolute -right-16 -top-20 z-0 h-64 w-64 rounded-full bg-primary/15 blur-3xl"></div>
+        <div class="pointer-events-none absolute -bottom-28 -left-20 h-64 w-64 rounded-full bg-secondary/10 blur-3xl"></div>
+        <div class="pointer-events-none absolute inset-0 -z-10 rounded-3xl opacity-[0.035] [background-image:radial-gradient(rgb(79_70_229)_1px,transparent_1px)] [background-size:18px_18px]"></div>
+        <div class="relative flex flex-wrap items-center justify-between gap-3 overflow-hidden rounded-t-3xl border-b border-primary/20 bg-gradient-to-r from-primary/10 via-violet-100/70 to-secondary/10 px-6 py-5 backdrop-blur-sm dark:from-primary/20 dark:via-surface-container dark:to-secondary/20">
+            <div>
+                <p class="font-label-sm text-label-sm font-semibold uppercase tracking-[0.18em] text-primary">Agenda kamu</p>
+                <h2 class="mt-1 font-title-lg text-title-lg font-bold text-on-surface">Atur hari, raih target</h2>
+            </div>
+            <div class="flex items-center gap-3 text-xs font-medium text-on-surface-variant">
+                <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-rose-400"></span>Tugas</span>
+                <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-blue-400"></span>Agenda</span>
+                <span class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-error"></span>Libur</span>
+            </div>
+        </div>
+        <div class="relative p-4 sm:p-6">
+        <div class="mb-3 grid grid-cols-7 gap-2 rounded-2xl bg-primary/10 px-2 py-2 ring-1 ring-primary/15">
+
             @foreach (['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'] as $d)
                 <div class="text-center font-label-md text-label-md text-outline font-semibold py-2">{{ $d }}</div>
             @endforeach
@@ -45,10 +62,10 @@
                         $itemList[] = '📌 ' . $a->title . ' (' . substr($a->start_time, 0, 5) . '-' . substr($a->end_time, 0, 5) . ')';
                     }
                 @endphp
-                <div class="relative rounded-xl bg-surface-container-low/40 dark:bg-slate-800/40 border border-surface-container-high dark:border-slate-700 p-2 min-h-[100px] flex flex-col justify-between {{ $day->isToday() ? 'ring-2 ring-primary-container' : '' }}">
+                <div class="group relative rounded-2xl bg-white/75 dark:bg-slate-800/60 border border-indigo-200/70 dark:border-slate-700 p-2.5 min-h-[112px] flex flex-col justify-between shadow-sm transition-all hover:-translate-y-1 hover:border-primary hover:shadow-lg {{ $day->isToday() ? 'bg-primary/15 ring-2 ring-primary shadow-md' : '' }}" :class="activeDate === '{{ $dateStr }}' ? 'z-40 !transform-none' : 'z-0'">
                     <div>
                         <div class="flex items-center justify-between mb-1">
-                            <span class="font-label-md text-label-md {{ $day->isToday() ? 'text-primary font-bold' : ($day->isSunday() || $holiday ? 'text-error font-bold' : 'text-on-surface-variant') }}">{{ $day->day }}</span>
+                            <span class="flex h-8 w-8 items-center justify-center rounded-full font-label-md text-label-md {{ $day->isToday() ? 'bg-primary text-white font-bold shadow-sm' : ($day->isSunday() || $holiday ? 'text-error font-bold' : 'text-on-surface-variant') }}">{{ $day->day }}</span>
                             @if($hasDetail)
                                 <button @click.stop="activeDate = (activeDate === '{{ $dateStr }}' ? null : '{{ $dateStr }}'); activeTitle = '{{ $day->translatedFormat('d F Y') }}'; activeItems = {{ json_encode($itemList) }}" class="w-5 h-5 rounded-full bg-primary-container/40 hover:bg-primary-container text-primary flex items-center justify-center transition-colors" title="Lihat Detail">
                                     <span class="material-symbols-outlined text-[14px]">info</span>
@@ -68,7 +85,7 @@
 
                     <!-- Popover kotak kecil di sekitar tanggal -->
                     <template x-if="activeDate === '{{ $dateStr }}'">
-                        <div @click.away="activeDate = null" class="absolute z-30 left-2 top-10 w-64 bg-surface-container-lowest rounded-xl shadow-xl border border-surface-container-high p-3 flex flex-col gap-2">
+                        <div @click.stop @click.away="activeDate = null" class="absolute z-50 left-1/2 top-10 w-64 -translate-x-1/2 bg-surface-container-lowest rounded-xl shadow-2xl border border-primary/20 p-3 flex flex-col gap-2">
                             <div class="flex items-center justify-between border-b border-surface-container-high pb-1.5">
                                 <span class="font-label-md font-bold text-on-surface" x-text="activeTitle"></span>
                                 <button @click="activeDate = null" class="text-outline hover:text-on-surface">
@@ -84,6 +101,7 @@
                     </template>
                 </div>
             @endforeach
+        </div>
         </div>
     </div>
 </x-app-layout>
