@@ -178,7 +178,7 @@
                         <button @click="sidebarExpanded = !sidebarExpanded" class="p-2 text-white dark:text-slate-300 hover:bg-white/10 rounded-lg transition-colors">
                             <span class="material-symbols-outlined text-[24px]">menu</span>
                         </button>
-                        <form method="GET" action="{{ route('tasks.index') }}" class="relative flex items-center w-72" x-data="{ query: '{{ request('q') }}' }">
+                        <form method="GET" action="{{ route('tasks.index') }}" class="relative flex items-center w-72" x-data="{ query: @js(request('q')) }">
                             <span class="material-symbols-outlined absolute left-3 text-white/70 dark:text-outline text-[18px]">search</span>
                             <input name="q" x-model="query" @input.debounce.300ms="$el.form.submit()" class="w-full h-10 pl-9 pr-4 rounded-xl bg-white/10 dark:bg-slate-800 text-white dark:text-on-surface placeholder:text-white/60 dark:placeholder:text-outline font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-white dark:focus:ring-[color:var(--color-primary-container)] transition-all border border-transparent focus:border-white" placeholder="Cari tugas..." type="text">
                         </form>

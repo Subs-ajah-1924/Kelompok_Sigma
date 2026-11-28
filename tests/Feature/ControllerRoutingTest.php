@@ -29,6 +29,32 @@ class ControllerRoutingTest extends TestCase
         }
     }
 
+    public function test_search_query_is_encoded_as_a_javascript_string(): void
+    {
+        $user = User::factory()->create();
+        Task::factory()->create(['user_id' => $user->id]);
+
+        $response = $this->actingAs($user)->get(route('dashboard', ['q' => "'+alert(1)+'"]));
+
+        $response->assertOk();
+        $response->assertSee('query:', false);
+        $response->assertSee('alert(1)', false);
+        $response->assertDontSee("query: ''+alert(1)+' '", false);
+    }
+
+    public function test_search_query_with_apostrophe_is_rendered_safely(): void
+    {
+        $user = User::factory()->create();
+        Task::factory()->create(['user_id' => $user->id]);
+
+        $response = $this->actingAs($user)->get(route('dashboard', ['q' => "don't"]));
+
+        $response->assertOk();
+        $response->assertSee('query:', false);
+        $response->assertSee('don', false);
+        $response->assertSee('t', false);
+    }
+
     public function test_authenticated_user_can_open_controller_pages(): void
     {
         $user = User::factory()->create();
