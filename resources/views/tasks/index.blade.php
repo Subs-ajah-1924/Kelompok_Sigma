@@ -33,7 +33,7 @@
                             <th class="py-3 px-4">Mata Kuliah</th>
                             <th class="py-3 px-4">Deadline</th>
                             <th class="py-3 px-4">Kesulitan</th>
-                            <th class="py-3 px-4">Status</th>
+                            <th class="py-3 px-4 text-center">Status</th>
                             <th class="py-3 px-4 rounded-r-xl text-right">Aksi</th>
                         </tr>
                     </thead>
@@ -66,7 +66,7 @@
                                      @endphp
                                      <span class="px-2.5 py-1 rounded-full {{ $difficultyClass }} font-label-sm text-label-sm font-semibold">{{ $task->difficulty->label() }}</span>
                                 </td>
-                                 <td class="py-3.5 px-4">
+                                 <td class="py-3.5 px-4 text-center">
                                      @php
                                          $statusClass = match ($task->status->value) {
                                              'todo' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
@@ -74,23 +74,10 @@
                                              'done' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
                                          };
                                      @endphp
-                                     @if ($task->status->value === 'done')
-                                         <span class="px-2.5 py-1 rounded-full {{ $statusClass }} font-label-sm text-label-sm font-medium flex items-center gap-1.5 w-fit">
-                                             <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
-                                             {{ $task->status->label() }}
-                                         </span>
-                                     @else
-                                         <form method="POST" action="{{ route('tasks.status', $task) }}" class="inline-flex">
-                                             @csrf
-                                             @method('PATCH')
-                                             <label class="sr-only" for="task-status-{{ $task->id }}">Ubah status {{ $task->title }}</label>
-                                             <select id="task-status-{{ $task->id }}" name="status" onchange="this.form.submit()" class="appearance-none cursor-pointer rounded-full border-0 {{ $statusClass }} py-1 pl-2.5 pr-7 font-label-sm text-label-sm font-medium focus:ring-2 focus:ring-primary-container">
-                                                 <option value="todo" {{ $task->status->value === 'todo' ? 'selected' : '' }}>To Do</option>
-                                                 <option value="in_progress" {{ $task->status->value === 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                                                 <option value="done">Done</option>
-                                             </select>
-                                         </form>
-                                     @endif
+                                     <span class="mx-auto block w-fit min-w-[90px] rounded-full px-2.5 py-1 text-center font-label-sm text-label-sm font-medium {{ $statusClass }}">
+                                         <span class="w-2 h-2 rounded-full bg-current"></span>
+                                         {{ $task->status->label() }}
+                                     </span>
                                  </td>
                                 <td class="py-3.5 px-4 text-right">
                                     <a href="{{ route('tasks.edit', $task) }}" class="p-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container transition-colors inline-block" aria-label="Edit">
