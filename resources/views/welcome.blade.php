@@ -100,13 +100,18 @@
     </header>
 
     <!-- Main Hero -->
-    <main class="w-full max-w-5xl mx-auto px-6 py-12 md:py-20 flex flex-col items-center text-center my-auto animate-fade-up relative z-10">
+    <main class="w-full max-w-7xl mx-auto px-6 py-12 md:py-20 flex flex-col items-center text-center my-auto animate-fade-up relative z-10">
+        <div class="absolute inset-x-0 top-10 -z-10 mx-auto h-96 max-w-5xl rounded-full bg-indigo-300/20 blur-3xl dark:bg-indigo-700/10"></div>
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-indigo-950/50 backdrop-blur-md text-indigo-600 dark:text-indigo-400 font-medium text-xs mb-8 border border-indigo-100 dark:border-indigo-900/50 shadow-xs transition-transform hover:scale-105 duration-300 cursor-default">
             <span class="material-symbols-outlined text-[16px]">verified</span>
             Student Workspace Terintegrasi
         </div>
         
-        <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 max-w-3xl leading-[1.15]">
+        <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-200/70 bg-white/60 px-3 py-1 text-xs font-semibold text-indigo-600 shadow-sm backdrop-blur dark:border-indigo-800/60 dark:bg-indigo-950/40 dark:text-indigo-300">
+            <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
+            Semua aktivitas kuliah, satu workspace
+        </div>
+        <h1 class="text-4xl md:text-7xl font-extrabold tracking-tight mb-6 max-w-4xl leading-[1.08]">
             Kelola Tugas & Kuliah Jadi Lebih <span class="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">Mudah & Terstruktur</span>
         </h1>
         
@@ -126,9 +131,15 @@
             </a>
         </div>
 
+        <div class="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm font-medium text-slate-500 dark:text-slate-400">
+            <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-indigo-500">check_circle</span>Gratis untuk mulai</span>
+            <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-indigo-500">check_circle</span>Tugas lebih terorganisir</span>
+            <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-indigo-500">check_circle</span>Jadwal tidak terlewat</span>
+        </div>
+
         <!-- Features Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20 w-full text-left">
-            <div class="p-6 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 group">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-14 w-full text-left">
+            <div class="relative overflow-hidden p-6 rounded-3xl bg-white/75 dark:bg-slate-900/75 backdrop-blur-md border border-white/80 dark:border-slate-800 shadow-lg shadow-indigo-500/5 hover:shadow-2xl hover:shadow-indigo-500/15 transition-all duration-300 hover:-translate-y-1.5 group">
                 <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110">
                     <span class="material-symbols-outlined text-[24px]">task_alt</span>
                 </div>
@@ -138,7 +149,7 @@
                 <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Atur daftar tugas, prioritas, status pengerjaan, dan deadline dengan tampilan modern.</p>
             </div>
 
-            <div class="p-6 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 group">
+            <div class="relative overflow-hidden p-6 rounded-3xl bg-white/75 dark:bg-slate-900/75 backdrop-blur-md border border-white/80 dark:border-slate-800 shadow-lg shadow-indigo-500/5 hover:shadow-2xl hover:shadow-indigo-500/15 transition-all duration-300 hover:-translate-y-1.5 group">
                 <div class="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110">
                     <span class="material-symbols-outlined text-[24px]">calendar_month</span>
                 </div>
@@ -148,7 +159,7 @@
                 <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Visualisasikan jadwal dan progress tugas menggunakan papan Kanban dan kalender interaktif.</p>
             </div>
 
-            <div class="p-6 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 group">
+            <div class="relative overflow-hidden p-6 rounded-3xl bg-white/75 dark:bg-slate-900/75 backdrop-blur-md border border-white/80 dark:border-slate-800 shadow-lg shadow-indigo-500/5 hover:shadow-2xl hover:shadow-indigo-500/15 transition-all duration-300 hover:-translate-y-1.5 group">
                 <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110">
                     <span class="material-symbols-outlined text-[24px]">auto_stories</span>
                 </div>
